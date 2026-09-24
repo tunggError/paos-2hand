@@ -192,7 +192,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
           className="bg-white border-4 border-gray-900 p-6 mb-8 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] flex flex-col lg:flex-row gap-8"
         >
           {/* Form */}
-          <form onSubmit={handleAddManual} className="flex-1">
+          <form onSubmit={handleAddManual} className="flex-1 min-w-0">
             <h3 className="font-black uppercase text-lg mb-4 text-gray-900 border-b-2 border-gray-900 pb-2">Thông tin Sản phẩm</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -233,7 +233,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
               {previewImages.length > 0 && (
                 <div className="mb-4">
                   <p className="text-xs font-bold text-gray-900 mb-2 uppercase">Ảnh đã chọn ({previewImages.length}):</p>
-                  <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+                  <div className="flex flex-wrap gap-2 pb-2">
                     {previewImages.map((img, idx) => (
                       <div key={idx} className="relative w-24 h-24 flex-shrink-0 border-2 border-gray-900 group">
                         <img src={img} className="w-full h-full object-cover" />
@@ -261,12 +261,12 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
           </form>
 
           {/* Live Preview Area */}
-          <div className="w-full lg:w-72 border-l-0 lg:border-l-4 lg:border-gray-900 lg:pl-8 pt-8 lg:pt-0">
+          <div className="w-full lg:w-[320px] lg:shrink-0 border-l-0 lg:border-l-4 lg:border-gray-900 lg:pl-8 pt-8 lg:pt-0">
             <h3 className="font-black uppercase text-sm mb-4 text-gray-900 bg-cream-200 inline-block px-2 py-1 border-2 border-gray-900 shadow-[2px_2px_0px_0px_rgba(17,24,39,1)]">
               XEM TRƯỚC (LIVE PREVIEW)
             </h3>
-            <div className="pointer-events-none transform scale-90 origin-top-left lg:origin-top w-[111%]">
-              <div className="bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col h-full">
+            <div className="pointer-events-none transform scale-[0.85] origin-top-left w-[117%]">
+              <div className="bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col">
                 <div className="relative h-[250px] border-b-4 border-gray-900 bg-gray-100 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
                   {previewImages.length > 0 || addForm.image ? (
                     (previewImages.length > 0 ? previewImages : addForm.image.split(',').map(u => u.trim())).map((img, idx) => (
