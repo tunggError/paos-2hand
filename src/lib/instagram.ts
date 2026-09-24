@@ -14,7 +14,7 @@ export interface InstagramPost {
   };
 }
 
-export async function getInstagramPosts(limit = 12): Promise<InstagramPost[]> {
+export async function getInstagramPosts(limit = 100): Promise<InstagramPost[]> {
   const IG_ACCESS_TOKEN = process.env.IG_ACCESS_TOKEN;
   const IG_USER_ID = process.env.IG_USER_ID;
 
@@ -24,18 +24,27 @@ export async function getInstagramPosts(limit = 12): Promise<InstagramPost[]> {
   }
 
   try {
-    const url = `https://graph.facebook.com/v19.0/${IG_USER_ID}/media?fields=id,caption,media_type,media_url,permalink,timestamp&limit=${limit}&access_token=${IG_ACCESS_TOKEN}`;
+    let allPosts: InstagramPost[] = [];
+    let url: string | null = `https://graph.facebook.com/v19.0/${IG_USER_ID}/media?fields=id,caption,media_type,media_url,permalink,timestamp&limit=${limit}&access_token=${IG_ACCESS_TOKEN}`;
     
-    const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Instagram API Error:", errorData);
-      return [];
+    while (url && allPosts.length < 500) {
+      const response = await fetch(url, { next: { revalidate: 3600 } }); 
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Instagram API Error:", errorData);
+        break;
+      }
+      
+      const data = await response.json();
+      if (data.data) {
+        allPosts = [...allPosts, ...data.data];
+      }
+      
+      url = data.paging?.next || null;
     }
 
-    const data = await response.json();
-    return data.data as InstagramPost[];
+    return allPosts;
   } catch (error) {
     console.error("Failed to fetch Instagram posts:", error);
     return [];
