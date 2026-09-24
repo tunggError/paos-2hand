@@ -25,18 +25,44 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
+  const loadOrders = () => {
+    setIsLoadingOrders(true);
+    fetch('/api/admin/orders')
+      .then(res => res.json())
+      .then(data => {
+        if (data.orders) setOrders(data.orders);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setIsLoadingOrders(false));
+  };
+
   useEffect(() => {
     if (activeTab === 'DON_HANG') {
-      setIsLoadingOrders(true);
-      fetch('/api/admin/orders')
-        .then(res => res.json())
-        .then(data => {
-          if (data.orders) setOrders(data.orders);
-        })
-        .catch(err => console.error(err))
-        .finally(() => setIsLoadingOrders(false));
+      loadOrders();
     }
   }, [activeTab]);
+
+  const handleUpdateOrderStatus = async (orderId: string, action: 'PAID' | 'CANCELLED') => {
+    if (!confirm(`Bạn chắc chắn muốn chuyển đơn này thành ${action === 'PAID' ? 'ĐÃ NHẬN TIỀN' : 'HỦY ĐƠN'}?`)) return;
+    
+    try {
+      const res = await fetch('/api/admin/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, action })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, status: action } : o));
+        alert(action === 'PAID' ? 'Đã chốt đơn thành công! Sản phẩm đã chuyển sang ĐÃ BÁN.' : 'Đã hủy đơn thành công! Sản phẩm đã được nhả ra.');
+      } else {
+        alert(data.error || 'Có lỗi xảy ra');
+      }
+    } catch (err) {
+      alert('Lỗi kết nối');
+    }
+  };
+
   
   // States for Search & Pagination
   const [searchQuery, setSearchQuery] = useState('');
@@ -586,11 +612,30 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
                         {order.total.toLocaleString('vi-VN')}đ
                       </td>
                       <td className="p-4 border-2 border-gray-900 align-top">
-                        <span className="bg-yellow-400 text-yellow-900 px-3 py-1 text-xs font-black uppercase tracking-widest border-2 border-yellow-900">
+                        <span className={`px-3 py-1 text-xs font-black uppercase tracking-widest border-2 ${
+                          order.status === 'PAID' ? 'bg-green-500 text-white border-green-900' :
+                          order.status === 'CANCELLED' ? 'bg-gray-300 text-gray-700 border-gray-600' :
+                          'bg-yellow-400 text-yellow-900 border-yellow-900'
+                        }`}>
                           {order.status}
                         </span>
+                        
                         {order.expireTime && order.status === 'PENDING' && (
-                          <p className="text-[10px] font-bold text-gray-500 mt-2">Hết hạn QR: {new Date(order.expireTime).toLocaleTimeString('vi-VN')}</p>
+                          <div className="mt-4 flex flex-col gap-2">
+                            <button 
+                              onClick={() => handleUpdateOrderStatus(order.orderId, 'PAID')}
+                              className="bg-green-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-green-900 hover:bg-green-700 transition-colors shadow-[2px_2px_0px_0px_rgba(20,83,45,1)]"
+                            >
+                              Đã Nhận Tiền
+                            </button>
+                            <button 
+                              onClick={() => handleUpdateOrderStatus(order.orderId, 'CANCELLED')}
+                              className="bg-red-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-red-900 hover:bg-red-700 transition-colors shadow-[2px_2px_0px_0px_rgba(127,29,29,1)]"
+                            >
+                              Hủy Đơn
+                            </button>
+                            <p className="text-[10px] font-bold text-gray-500 mt-1">Hết hạn QR: {new Date(order.expireTime).toLocaleTimeString('vi-VN')}</p>
+                          </div>
                         )}
                       </td>
                     </tr>
