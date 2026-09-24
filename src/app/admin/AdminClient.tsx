@@ -19,7 +19,24 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', isSold: false });
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'KHO_HANG' | 'THEM_SP'>('KHO_HANG');
+  const [activeTab, setActiveTab] = useState<'KHO_HANG' | 'THEM_SP' | 'DON_HANG'>('KHO_HANG');
+  
+  // Orders State
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'DON_HANG') {
+      setIsLoadingOrders(true);
+      fetch('/api/admin/orders')
+        .then(res => res.json())
+        .then(data => {
+          if (data.orders) setOrders(data.orders);
+        })
+        .catch(err => console.error(err))
+        .finally(() => setIsLoadingOrders(false));
+    }
+  }, [activeTab]);
   
   // States for Search & Pagination
   const [searchQuery, setSearchQuery] = useState('');
@@ -264,6 +281,12 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
           className={`font-black uppercase px-6 py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] transition-colors ${activeTab === 'THEM_SP' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900 hover:bg-cream-200'}`}
         >
           + THÊM SẢN PHẨM THỦ CÔNG
+        </button>
+        <button
+          onClick={() => setActiveTab('DON_HANG')}
+          className={`font-black uppercase px-6 py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] transition-colors ${activeTab === 'DON_HANG' ? 'bg-orange-500 text-white' : 'bg-white text-gray-900 hover:bg-cream-200'}`}
+        >
+          QUẢN LÝ ĐƠN HÀNG
         </button>
       </div>
 
@@ -517,6 +540,66 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
             </div>
           </div>
         </motion.div>
+      )}
+
+      {activeTab === 'DON_HANG' && (
+        <div className="bg-white border-4 border-gray-900 p-6 mb-8 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)]">
+          <h2 className="text-2xl font-black uppercase text-gray-900 mb-6">Quản Lý Đơn Hàng</h2>
+          
+          {isLoadingOrders ? (
+            <p className="font-bold text-gray-600">Đang tải dữ liệu...</p>
+          ) : orders.length === 0 ? (
+            <p className="font-bold text-gray-600">Chưa có đơn hàng nào.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-900 text-white text-sm uppercase tracking-widest font-black">
+                    <th className="p-4 border-2 border-gray-900">Mã Đơn / Thời Gian</th>
+                    <th className="p-4 border-2 border-gray-900">Khách Hàng</th>
+                    <th className="p-4 border-2 border-gray-900">Sản Phẩm</th>
+                    <th className="p-4 border-2 border-gray-900">Tổng Tiền</th>
+                    <th className="p-4 border-2 border-gray-900">Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order: any) => (
+                    <tr key={order.orderId} className="border-b-2 border-gray-900 hover:bg-cream-100 transition-colors">
+                      <td className="p-4 border-2 border-gray-900 align-top">
+                        <span className="font-black text-olive-700 text-lg block">{order.orderId}</span>
+                        <span className="text-xs font-bold text-gray-500">{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
+                      </td>
+                      <td className="p-4 border-2 border-gray-900 align-top">
+                        <p className="font-black text-gray-900">{order.customer.name}</p>
+                        <p className="font-bold text-gray-600">{order.customer.phone}</p>
+                        <p className="text-sm font-bold text-gray-500 max-w-[200px]">{order.customer.address}, {order.customer.province}</p>
+                      </td>
+                      <td className="p-4 border-2 border-gray-900 align-top">
+                        <ul className="list-disc pl-4 text-sm font-bold text-gray-700">
+                          {order.cart.map((item: any) => (
+                            <li key={item.id}>{item.name} ({item.price})</li>
+                          ))}
+                        </ul>
+                        <p className="text-xs font-bold text-olive-600 mt-2">+ Ship: {order.shippingFee.toLocaleString('vi-VN')}đ</p>
+                      </td>
+                      <td className="p-4 border-2 border-gray-900 align-top font-black text-red-600 text-lg">
+                        {order.total.toLocaleString('vi-VN')}đ
+                      </td>
+                      <td className="p-4 border-2 border-gray-900 align-top">
+                        <span className="bg-yellow-400 text-yellow-900 px-3 py-1 text-xs font-black uppercase tracking-widest border-2 border-yellow-900">
+                          {order.status}
+                        </span>
+                        {order.expireTime && order.status === 'PENDING' && (
+                          <p className="text-[10px] font-bold text-gray-500 mt-2">Hết hạn QR: {new Date(order.expireTime).toLocaleTimeString('vi-VN')}</p>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [isLocking, setIsLocking] = useState(false);
   const [lockExpireTime, setLockExpireTime] = useState<number | null>(null);
   const [lockTimeLeft, setLockTimeLeft] = useState<number>(900); // 15 mins default
+  const [orderId, setOrderId] = useState<string>('');
 
   useEffect(() => {
     if (step === 2 && lockExpireTime) {
@@ -60,18 +61,15 @@ export default function CheckoutPage() {
   const shippingFee = province === 'Hà Nội' ? 25000 : (province ? 35000 : 0);
   const finalTotal = cartTotal + shippingFee;
 
-  // Create VietQR URL
-  const qrUrl = `https://img.vietqr.io/image/TCB-2107999999999-compact2.png?amount=${finalTotal}&addInfo=${encodeURIComponent('Thanh toan Paos 2hand')}&accountName=NGUYEN%20THANH%20TUNG`;
+  // Create VietQR URL using orderId
+  const qrUrl = `https://img.vietqr.io/image/TCB-2107999999999-compact2.png?amount=${finalTotal}&addInfo=${orderId}&accountName=NGUYEN%20THANH%20TUNG`;
 
   // Create Instagram pre-filled message
   const igMessage = encodeURIComponent(
-    `Chào shop, mình chốt đơn qua Web:\n\n` +
+    `Chào shop, mình đã CK đơn hàng: ${orderId}\n\n` +
     `Người nhận: ${name}\nSĐT: ${phone}\nĐịa chỉ: ${address}, ${province}\n\n` +
     `Sản phẩm:\n${cart.map((item, i) => `${i + 1}. ${item.name} (${item.price})`).join('\n')}\n\n` +
-    `Tiền hàng: ${cartTotal.toLocaleString('vi-VN')}đ\n` +
-    `Phí ship: ${shippingFee.toLocaleString('vi-VN')}đ\n` +
-    `TỔNG CẦN TT: ${finalTotal.toLocaleString('vi-VN')}đ\n\n` +
-    `(Mình đã quét QR thanh toán xong)`
+    `TỔNG ĐÃ TT: ${finalTotal.toLocaleString('vi-VN')}đ`
   );
   
   const igProfile = `https://instagram.com/paos.2hand`;
@@ -102,10 +100,15 @@ export default function CheckoutPage() {
 
     setIsLocking(true);
     try {
-      const res = await fetch('/api/lock', {
+      const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: cart.map(item => item.id) })
+        body: JSON.stringify({ 
+          cart, 
+          customer: { name, phone, address, province },
+          shippingFee,
+          total: finalTotal
+        })
       });
       const data = await res.json();
       
@@ -114,6 +117,7 @@ export default function CheckoutPage() {
         return;
       }
       
+      setOrderId(data.orderId);
       setLockExpireTime(data.expireTime);
       setStep(2);
     } catch (err) {
@@ -238,7 +242,7 @@ export default function CheckoutPage() {
                   
                   <div className="w-full space-y-3 mt-auto">
                     <p className="font-bold text-xs text-gray-600 bg-cream-100 p-2 border-2 border-gray-900">
-                      Nội dung CK: <span className="text-gray-900 font-black block sm:inline">Thanh toan Paos 2hand</span>
+                      Mã đơn hàng (ND CK): <span className="text-olive-700 font-black text-lg block">{orderId}</span>
                     </p>
                     <p className="font-bold text-xs text-gray-600 leading-tight">
                       Sau khi chuyển khoản, hãy bấm nút bên dưới để gửi tin nhắn thông tin nhận hàng cho shop qua Instagram!
