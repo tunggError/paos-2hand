@@ -13,8 +13,8 @@ export function parseInstagramCaption(caption: string) {
     isSold = true;
   }
 
-  const captionLower = caption.toLowerCase();
-  if (captionLower.includes('new drop') || captionLower.includes('drop mới') || (!captionLower.includes('cond:') && !captionLower.includes('giá:'))) {
+  const captionLower = caption.trim().toLowerCase();
+  if (captionLower.startsWith('new drop')) {
     isAnnouncement = true;
   }
 
