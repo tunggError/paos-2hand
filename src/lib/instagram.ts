@@ -47,7 +47,8 @@ export async function getInstagramPosts(limit = 100): Promise<InstagramPost[]> {
     return allPosts;
   } catch (error) {
     console.error("Failed to fetch Instagram posts:", error);
-    return [];
+    // Throw error so Next.js ISR doesn't cache an empty response on network failure
+    throw new Error("Failed to fetch Instagram data");
   }
 }
 
