@@ -1,26 +1,24 @@
-import { getInstagramPost } from '@/lib/instagram';
-import { parseInstagramCaption } from '@/lib/parser';
+import { getAllProducts } from '@/lib/data';
 import ProductGallery from '@/components/ProductGallery';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const post = await getInstagramPost(id);
+  
+  // Use cached getAllProducts instead of individual API fetch for instant loading
+  const allProducts = await getAllProducts();
+  const product = allProducts.find(p => p.id === id);
 
-  if (!post) {
+  if (!product) {
     notFound();
   }
 
-  const { name, condition, measurements, description, price, isSold } = parseInstagramCaption(post.caption);
-
-  // Collect images
-  let images = [post.media_url];
-  if (post.media_type === 'CAROUSEL_ALBUM' && post.children && post.children.data) {
-    images = post.children.data.map(child => child.media_url);
-  }
+  const { name, condition, measurements, description, price, isSold, image, images, post } = product;
+  const displayImages = images && images.length > 0 ? images : [image];
+  const permalink = post?.permalink || '#';
 
   return (
     <div className="bg-cream-100 min-h-screen py-12 px-4">
@@ -34,7 +32,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-cream-200 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
           {/* Left: Gallery */}
           <div className="w-full">
-            <ProductGallery images={images} />
+            <ProductGallery images={displayImages} />
           </div>
 
           {/* Right: Details */}
@@ -53,7 +51,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 Độ mới: {condition}
               </span>
               <span className="bg-cream-200 text-olive-800 px-4 py-2 rounded-full font-bold text-sm">
-                Kích thước: Ngang {measurements.n}cm - Dài {measurements.d}cm
+                Kích thước: Ngang {measurements?.n || 0}cm - Dài {measurements?.d || 0}cm
               </span>
             </div>
 
@@ -75,7 +73,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 </div>
               ) : (
                 <a 
-                  href={post.permalink} 
+                  href={permalink} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-full bg-olive-600 text-white text-center py-4 rounded-xl font-bold text-lg hover:bg-olive-700 transition-colors shadow-md flex items-center justify-center gap-2"
