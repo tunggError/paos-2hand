@@ -34,7 +34,8 @@ export default function AnnouncementCard({
       <div className="w-full relative aspect-video overflow-hidden bg-cream-200 border-b-4 border-gray-900 shrink-0">
         <motion.img 
           src={image} 
-          alt="Announcement" 
+          alt="Announcement"
+          loading="lazy"
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.4 }}
           className="object-cover w-full h-full"

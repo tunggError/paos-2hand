@@ -1,12 +1,19 @@
 import ProductCard from '@/components/ProductCard';
 import { getAllProducts } from '@/lib/data';
+import Link from 'next/link';
 
 export const revalidate = 60;
 
-export default async function ProductsPage() {
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const allData = await getAllProducts();
-
   const products = allData.filter(item => !item.isAnnouncement);
+
+  const resolvedParams = await searchParams;
+  const pageStr = typeof resolvedParams.page === 'string' ? resolvedParams.page : '1';
+  const page = parseInt(pageStr) || 1;
+  const itemsPerPage = 20;
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const currentProducts = products.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
     <div className="bg-cream-100 min-h-screen pt-12 pb-24 px-4">
@@ -25,22 +32,51 @@ export default async function ProductsPage() {
             <p className="text-gray-500">Chưa tải được sản phẩm hoặc không có bài viết nào.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((item) => (
-              <ProductCard 
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                condition={item.condition || "9/10"}
-                measurements={item.measurements || {n: 0, d: 0}}
-                description={item.description || "Hàng 2hand tuyển chọn."}
-                price={item.price}
-                image={item.image}
-                images={item.images}
-                isSold={item.isSold}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {currentProducts.map((item) => (
+                <ProductCard 
+                  key={item.id}
+                  id={item.id}
+                  name={item.name}
+                  condition={item.condition || "9/10"}
+                  measurements={item.measurements || {n: 0, d: 0}}
+                  description={item.description || "Hàng 2hand tuyển chọn."}
+                  price={item.price}
+                  image={item.image}
+                  images={item.images}
+                  isSold={item.isSold}
+                />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-12">
+                {page > 1 && (
+                  <Link 
+                    href={`/products?page=${page - 1}`}
+                    className="bg-white text-gray-900 px-6 py-2 font-black uppercase tracking-widest border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:text-white transition-colors"
+                  >
+                    &larr; Trang trước
+                  </Link>
+                )}
+                
+                <span className="font-bold text-gray-700">
+                  Trang {page} / {totalPages}
+                </span>
+
+                {page < totalPages && (
+                  <Link 
+                    href={`/products?page=${page + 1}`}
+                    className="bg-white text-gray-900 px-6 py-2 font-black uppercase tracking-widest border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:text-white transition-colors"
+                  >
+                    Trang sau &rarr;
+                  </Link>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
