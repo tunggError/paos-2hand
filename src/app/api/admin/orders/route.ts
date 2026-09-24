@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       order.status = 'PAID';
       
       // Update overrides to mark as sold
-      for (const item of order.items) {
+      for (const item of order.cart) {
         const existingOverrideStr = await redis.hget('product_overrides', item.id);
         const override = existingOverrideStr ? JSON.parse(existingOverrideStr as string) : {};
         override.isSold = true;
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     } else if (action === 'CANCELLED') {
       order.status = 'CANCELLED';
       // Release the locks
-      for (const item of order.items) {
+      for (const item of order.cart) {
         await redis.zrem('locked_products', item.id);
       }
     }

@@ -25,6 +25,16 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
+  // Custom modal state (replaces browser alert/confirm)
+  const [modal, setModal] = useState<{
+    type: 'alert' | 'confirm';
+    message: string;
+    onConfirm?: () => void;
+  } | null>(null);
+
+  const showAlert = (message: string) => setModal({ type: 'alert', message });
+  const showConfirm = (message: string, onConfirm: () => void) => setModal({ type: 'confirm', message, onConfirm });
+
   const loadOrders = () => {
     setIsLoadingOrders(true);
     fetch('/api/admin/orders')
@@ -43,24 +53,26 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   }, [activeTab]);
 
   const handleUpdateOrderStatus = async (orderId: string, action: 'PAID' | 'CANCELLED') => {
-    if (!confirm(`Bạn chắc chắn muốn chuyển đơn này thành ${action === 'PAID' ? 'ĐÃ NHẬN TIỀN' : 'HỦY ĐƠN'}?`)) return;
+    const message = `Bạn chắc chắn muốn chuyển đơn này thành ${action === 'PAID' ? 'ĐÃ NHẬN TIỀN' : 'HỦY ĐƠN'}?`;
     
-    try {
-      const res = await fetch('/api/admin/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, action })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, status: action } : o));
-        alert(action === 'PAID' ? 'Đã chốt đơn thành công! Sản phẩm đã chuyển sang ĐÃ BÁN.' : 'Đã hủy đơn thành công! Sản phẩm đã được nhả ra.');
-      } else {
-        alert(data.error || 'Có lỗi xảy ra');
+    showConfirm(message, async () => {
+      try {
+        const res = await fetch('/api/admin/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, status: action } : o));
+          showAlert(action === 'PAID' ? '✅ Đã chốt đơn thành công!\nSản phẩm đã chuyển sang ĐÃ BÁN.' : '🚫 Đã hủy đơn thành công!\nSản phẩm đã được nhả ra.');
+        } else {
+          showAlert('❌ Lỗi: ' + (data.error || 'Có lỗi xảy ra'));
+        }
+      } catch (err) {
+        showAlert('❌ Lỗi kết nối. Vui lòng thử lại.');
       }
-    } catch (err) {
-      alert('Lỗi kết nối');
-    }
+    });
   };
 
   
@@ -172,7 +184,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
       setIsAuthenticated(true);
       localStorage.setItem('adminAuth', 'true');
     } else {
-      alert("Sai mật khẩu!");
+      showAlert('❌ Sai mật khẩu!');
     }
   };
 
@@ -189,9 +201,10 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   };
 
   const handleDeleteManual = async (id: string) => {
-    if (!confirm("Xóa nhé?")) return;
-    setProducts(products.filter(p => p.id !== id));
-    try { await deleteManualProduct(id); } catch (err) {}
+    showConfirm('Xóa sản phẩm này khỏi kho?', async () => {
+      setProducts(products.filter(p => p.id !== id));
+      try { await deleteManualProduct(id); } catch (err) {}
+    });
   };
 
   const handleAddManual = async (e: React.FormEvent) => {
@@ -214,14 +227,14 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
         const uploadedUrls = await Promise.all(uploadPromises);
         imageUrls = [...imageUrls, ...uploadedUrls];
       } catch (err) {
-        alert("Lỗi khi tải ảnh lên!");
+      alert("Lỗi khi tải ảnh lên!");
         setIsUploading(false);
         return;
       }
     }
 
     if (imageUrls.length === 0) {
-      alert("Vui lòng chọn ảnh!");
+      showAlert('⚠️ Vui lòng chọn ảnh!');
       setIsUploading(false);
       return;
     }
@@ -250,13 +263,22 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     try {
       await addManualProduct(newProduct);
     } catch (err) {
-      alert("Lỗi khi thêm!");
+      showAlert('❌ Lỗi khi thêm sản phẩm!');
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="flex justify-center mt-20">
+      <>
+        {modal && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+            <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-8 max-w-sm w-full mx-4">
+              <p className="font-bold text-gray-900 text-base mb-6 leading-relaxed whitespace-pre-line">{modal.message}</p>
+              <button onClick={() => setModal(null)} className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-3 border-2 border-gray-900 hover:bg-olive-600 transition-colors">OK</button>
+            </div>
+          </div>
+        )}
+        <div className="flex justify-center mt-20">
         <form onSubmit={handleLogin} className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-8 w-full max-w-md">
           <h2 className="text-2xl font-black uppercase tracking-widest text-gray-900 mb-6">Đăng nhập Quản trị</h2>
           <input 
@@ -271,6 +293,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
           </button>
         </form>
       </div>
+      </>
     );
   }
 
@@ -294,6 +317,38 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
 
   return (
     <div>
+      {/* Custom Modal */}
+      {modal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-8 max-w-sm w-full mx-4">
+            <p className="font-bold text-gray-900 text-base mb-6 leading-relaxed whitespace-pre-line">{modal.message}</p>
+            {modal.type === 'confirm' ? (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { modal.onConfirm?.(); setModal(null); }}
+                  className="flex-1 bg-olive-600 text-white font-black uppercase tracking-widest py-3 border-2 border-gray-900 hover:bg-gray-900 transition-colors"
+                >
+                  Xác nhận
+                </button>
+                <button
+                  onClick={() => setModal(null)}
+                  className="flex-1 bg-white text-gray-900 font-black uppercase tracking-widest py-3 border-2 border-gray-900 hover:bg-cream-200 transition-colors"
+                >
+                  Hủy
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setModal(null)}
+                className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-3 border-2 border-gray-900 hover:bg-olive-600 transition-colors"
+              >
+                OK
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8 pb-4">
         <button
