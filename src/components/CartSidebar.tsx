@@ -49,7 +49,7 @@ export default function CartSidebar() {
                   <div key={item.id} className="flex gap-4 bg-white border-2 border-gray-900 p-3 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] relative">
                     <img src={item.image} alt={item.name} className="w-20 h-24 object-cover border-2 border-gray-900" />
                     <div className="flex-1 flex flex-col justify-center pr-8">
-                      <h3 className="font-bold text-sm uppercase line-clamp-2 leading-tight mb-2">{item.name}</h3>
+                      <h3 className="font-bold text-sm uppercase line-clamp-2 leading-tight mb-2 text-gray-900">{item.name}</h3>
                       <p className="font-black text-olive-600">{item.price}</p>
                     </div>
                     <button 
@@ -67,7 +67,7 @@ export default function CartSidebar() {
 
             {cart.length > 0 && (
               <div className="p-6 bg-white border-t-4 border-gray-900">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex justify-between items-center mb-6 text-gray-900">
                   <span className="font-black uppercase tracking-wider">Tổng cộng:</span>
                   <span className="font-black text-2xl">{cartTotal.toLocaleString('vi-VN')}đ</span>
                 </div>

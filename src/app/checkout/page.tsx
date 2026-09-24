@@ -38,21 +38,21 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="flex-1 bg-cream-100 py-12 px-4">
+    <div className="flex-1 bg-cream-100 py-12 px-4 text-gray-900">
       <div className="container mx-auto max-w-5xl">
-        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-center">Thanh Toán</h1>
+        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-center text-gray-900">Thanh Toán</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Order Summary */}
           <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8">
-            <h2 className="text-2xl font-black uppercase tracking-widest mb-6 border-b-4 border-gray-900 pb-4">Đơn hàng của bạn</h2>
+            <h2 className="text-2xl font-black uppercase tracking-widest mb-6 border-b-4 border-gray-900 pb-4 text-gray-900">Đơn hàng của bạn</h2>
             
             <div className="space-y-4 mb-6">
               {cart.map(item => (
                 <div key={item.id} className="flex gap-4 p-3 bg-cream-100 border-2 border-gray-900">
                   <img src={item.image} alt={item.name} className="w-16 h-16 object-cover border-2 border-gray-900" />
                   <div className="flex-1">
-                    <h3 className="font-bold text-sm uppercase line-clamp-1">{item.name}</h3>
+                    <h3 className="font-bold text-sm uppercase line-clamp-1 text-gray-900">{item.name}</h3>
                     <p className="font-black text-olive-600 mt-1">{item.price}</p>
                   </div>
                 </div>
@@ -61,7 +61,7 @@ export default function CheckoutPage() {
             
             <div className="border-t-4 border-gray-900 pt-6">
               <div className="flex justify-between items-end">
-                <span className="font-black uppercase tracking-widest text-lg">Tổng thanh toán:</span>
+                <span className="font-black uppercase tracking-widest text-lg text-gray-900">Tổng thanh toán:</span>
                 <span className="font-black text-4xl text-red-600">{cartTotal.toLocaleString('vi-VN')}đ</span>
               </div>
             </div>
@@ -69,8 +69,8 @@ export default function CheckoutPage() {
 
           {/* Payment Section */}
           <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8 flex flex-col items-center text-center">
-            <h2 className="text-2xl font-black uppercase tracking-widest mb-2">Quét Mã Thanh Toán</h2>
-            <p className="font-bold text-gray-500 mb-6 bg-cream-200 px-4 py-1 border-2 border-gray-900">Techcombank • NGUYEN THANH TUNG</p>
+            <h2 className="text-2xl font-black uppercase tracking-widest mb-2 text-gray-900">Quét Mã Thanh Toán</h2>
+            <p className="font-bold text-gray-900 mb-6 bg-cream-200 px-4 py-1 border-2 border-gray-900">Techcombank • NGUYEN THANH TUNG</p>
             
             <div className="w-64 h-64 border-4 border-gray-900 mb-6 p-2 bg-white relative">
               <img src={qrUrl} alt="VietQR Code" className="w-full h-full object-contain" />
