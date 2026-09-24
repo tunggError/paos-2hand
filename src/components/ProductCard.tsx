@@ -41,20 +41,21 @@ export default function ProductCard({
       transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
       className="group flex flex-col bg-white rounded-none overflow-hidden border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] hover:-translate-y-2 transition-transform duration-300 relative"
     >
-      <Link href={`/product/${id}`} className="relative aspect-[4/5] w-full overflow-hidden bg-cream-100 block border-b-4 border-gray-900">
-        <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
-          {(images && images.length > 0 ? images : [image]).map((img, idx) => (
-            <div key={idx} className="min-w-full h-full flex-shrink-0 snap-center relative">
-              <motion.img 
-                src={img} 
-                alt={`${name} - ${idx + 1}`} 
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.4 }}
-                className={`object-cover w-full h-full ${isSold ? 'grayscale opacity-70' : ''}`}
-              />
-            </div>
-          ))}
-        </div>
+      <Link href={`/product/${id}`} className="relative aspect-[4/5] w-full overflow-hidden bg-cream-100 block border-b-4 border-gray-900 group">
+        <motion.img 
+          src={images && images.length > 0 ? images[0] : image} 
+          alt={name} 
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.4 }}
+          className={`object-cover w-full h-full ${isSold ? 'grayscale opacity-70' : ''}`}
+        />
+        {/* Optional: Indicator that it has multiple images */}
+        {images && images.length > 1 && (
+          <div className="absolute bottom-2 right-2 bg-gray-900/80 text-white text-[10px] font-black px-2 py-1 flex items-center gap-1 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            +{images.length - 1} ảnh
+          </div>
+        )}
         {isSold && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
             <span className="bg-red-600 text-white font-black px-6 py-2 rounded-full text-lg uppercase tracking-widest shadow-lg transform -rotate-12">
