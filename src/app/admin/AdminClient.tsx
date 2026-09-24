@@ -35,6 +35,10 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
+
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
