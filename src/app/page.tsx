@@ -71,6 +71,7 @@ export default async function Home() {
                     image={item.image}
                     images={item.images}
                     isSold={item.isSold}
+                    permalink={item.post?.permalink}
                   />
                 ))}
               </div>

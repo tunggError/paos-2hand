@@ -46,6 +46,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                   image={item.image}
                   images={item.images}
                   isSold={item.isSold}
+                  permalink={item.post?.permalink}
                 />
               ))}
             </div>
