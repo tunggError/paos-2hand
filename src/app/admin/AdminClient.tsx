@@ -91,7 +91,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
             placeholder="Nhập mật khẩu..."
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full border-2 border-gray-900 p-3 mb-6 bg-cream-100 font-bold focus:outline-none focus:ring-2 focus:ring-olive-600"
+            className="w-full border-2 border-gray-900 p-3 mb-6 bg-cream-100 font-bold text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-600"
           />
           <button type="submit" className="w-full bg-olive-600 text-white font-black p-3 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 transition-colors uppercase tracking-widest">
             Vào Trang Quản Trị
@@ -122,9 +122,9 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
         >
           <h3 className="font-black uppercase text-lg mb-4 text-gray-900 border-b-2 border-gray-900 pb-2">Thêm Sản phẩm Mới</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <input required placeholder="Tên sản phẩm" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="border-2 border-gray-900 p-2 font-bold" />
-            <input required placeholder="Giá (VD: 350.000đ)" value={addForm.price} onChange={e => setAddForm({...addForm, price: e.target.value})} className="border-2 border-gray-900 p-2 font-bold" />
-            <input required placeholder="Link ảnh URL" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="border-2 border-gray-900 p-2 font-bold" />
+            <input required placeholder="Tên sản phẩm" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+            <input required placeholder="Giá (VD: 350.000đ)" value={addForm.price} onChange={e => setAddForm({...addForm, price: e.target.value})} className="border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+            <input required placeholder="Link ảnh URL" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
           </div>
           <button type="submit" className="bg-olive-600 text-white font-black px-6 py-2 border-2 border-gray-900 uppercase">
             Lưu Sản Phẩm
