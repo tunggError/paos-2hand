@@ -18,10 +18,8 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   // States for Editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', isSold: false });
-
-  // States for Adding Manual Product
-  const [isAdding, setIsAdding] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'KHO_HANG' | 'THEM_SP'>('KHO_HANG');
   const [addForm, setAddForm] = useState({ 
     name: '', 
     price: '', 
@@ -180,7 +178,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     };
     
     setProducts([newProduct, ...products]);
-    setIsAdding(false);
+    setActiveTab('KHO_HANG');
     setIsUploading(false);
     setAddForm({ name: '', price: '', image: '', description: '', condition: '9/10', n: 0, d: 0 });
     setPreviewImages([]);
@@ -233,40 +231,105 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
 
   return (
     <div>
-      {/* Dashboard Section */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-black uppercase text-gray-900 mb-6">Tổng Quan Kho Hàng</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
-            <h3 className="font-bold text-gray-500 uppercase text-xs mb-2 tracking-widest">Tổng Sản Phẩm</h3>
-            <p className="text-4xl font-black text-gray-900">{totalProducts}</p>
-          </div>
-          <div className="bg-olive-600 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
-            <h3 className="font-bold text-cream-200 uppercase text-xs mb-2 tracking-widest">Đang Bán</h3>
-            <p className="text-4xl font-black text-white">{availableProducts}</p>
-          </div>
-          <div className="bg-red-600 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
-            <h3 className="font-bold text-red-200 uppercase text-xs mb-2 tracking-widest">Đã Bán</h3>
-            <p className="text-4xl font-black text-white">{soldProducts}</p>
-          </div>
-          <div className="bg-yellow-400 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
-            <h3 className="font-bold text-yellow-900 uppercase text-xs mb-2 tracking-widest">Doanh Thu Ước Tính</h3>
-            <p className="text-3xl font-black text-gray-900 line-clamp-1" title={formatMoney(totalRevenue)}>{formatMoney(totalRevenue)}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center mb-8 pt-8 border-t-4 border-gray-900">
-        <h2 className="text-2xl font-black uppercase text-gray-900">Quản lý Sản Phẩm</h2>
-        <button 
-          onClick={() => setIsAdding(!isAdding)}
-          className="bg-gray-900 text-white font-black px-6 py-2 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 uppercase"
+      {/* Tabs */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-8 pb-4">
+        <button
+          onClick={() => setActiveTab('KHO_HANG')}
+          className={`font-black uppercase px-6 py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] transition-colors ${activeTab === 'KHO_HANG' ? 'bg-olive-600 text-white' : 'bg-white text-gray-900 hover:bg-cream-200'}`}
         >
-          {isAdding ? "Hủy" : "+ Thêm SP Thủ công"}
+          KHO HÀNG & THỐNG KÊ
+        </button>
+        <button
+          onClick={() => setActiveTab('THEM_SP')}
+          className={`font-black uppercase px-6 py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] transition-colors ${activeTab === 'THEM_SP' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900 hover:bg-cream-200'}`}
+        >
+          + THÊM SẢN PHẨM THỦ CÔNG
         </button>
       </div>
 
-      {isAdding && (
+      {activeTab === 'KHO_HANG' && (
+        <>
+          {/* Dashboard Section */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-black uppercase text-gray-900 mb-6">Tổng Quan Kho Hàng</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+                <h3 className="font-bold text-gray-500 uppercase text-xs mb-2 tracking-widest">Tổng Sản Phẩm</h3>
+                <p className="text-4xl font-black text-gray-900">{totalProducts}</p>
+              </div>
+              <div className="bg-olive-600 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+                <h3 className="font-bold text-cream-200 uppercase text-xs mb-2 tracking-widest">Đang Bán</h3>
+                <p className="text-4xl font-black text-white">{availableProducts}</p>
+              </div>
+              <div className="bg-red-600 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+                <h3 className="font-bold text-red-200 uppercase text-xs mb-2 tracking-widest">Đã Bán</h3>
+                <p className="text-4xl font-black text-white">{soldProducts}</p>
+              </div>
+              <div className="bg-yellow-400 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+                <h3 className="font-bold text-yellow-900 uppercase text-xs mb-2 tracking-widest">Doanh Thu Ước Tính</h3>
+                <p className="text-3xl font-black text-gray-900 line-clamp-1" title={formatMoney(totalRevenue)}>{formatMoney(totalRevenue)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-8 pt-8 border-t-4 border-gray-900">
+            <h2 className="text-2xl font-black uppercase text-gray-900 mb-6">Danh sách Sản Phẩm</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map(p => (
+                <div key={p.id} className={`bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col ${p.isSold ? 'opacity-70 grayscale' : ''}`}>
+                  <div className="relative h-48 border-b-4 border-gray-900">
+                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                    {p.isSold && <div className="absolute top-2 right-2 bg-red-600 text-white font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs transform rotate-12">Đã Bán</div>}
+                    {p.isManual && <div className="absolute top-2 left-2 bg-blue-600 text-white font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs">Thủ công</div>}
+                    {p.isAnnouncement && <div className="absolute top-2 left-2 bg-yellow-400 text-gray-900 font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs">Thông báo</div>}
+                  </div>
+                  
+                  <div className="p-4 flex-1 flex flex-col">
+                    {editingId === p.id ? (
+                      <div className="space-y-3 flex-1 text-gray-900">
+                        <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full border-2 border-gray-900 p-1 text-sm font-bold" />
+                        <input value={editForm.price} onChange={e => setEditForm({...editForm, price: e.target.value})} className="w-full border-2 border-gray-900 p-1 text-sm font-bold" />
+                        <label className="flex items-center gap-2 font-bold text-sm cursor-pointer">
+                          <input type="checkbox" checked={editForm.isSold} onChange={e => setEditForm({...editForm, isSold: e.target.checked})} className="w-4 h-4 border-2 border-gray-900 accent-red-600" />
+                          Đánh dấu HẾT HÀNG
+                        </label>
+                        <div className="flex gap-2 pt-2">
+                          <button onClick={handleSaveEdit} className="bg-olive-600 text-white font-black px-3 py-1 border-2 border-gray-900 flex-1 text-xs uppercase">Lưu</button>
+                          <button onClick={() => setEditingId(null)} className="bg-gray-200 text-gray-900 font-black px-3 py-1 border-2 border-gray-900 flex-1 text-xs uppercase">Hủy</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <h3 className="font-bold text-sm uppercase line-clamp-2 text-gray-900 mb-2">{p.name}</h3>
+                        <p className="font-black text-olive-600 mt-auto mb-4">{p.price}</p>
+                        
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleEdit(p)}
+                            className="bg-gray-100 text-gray-900 font-black px-3 py-2 border-2 border-gray-900 hover:bg-gray-200 flex-1 text-xs uppercase tracking-wider"
+                          >
+                            Sửa
+                          </button>
+                          {p.isManual && (
+                            <button 
+                              onClick={() => handleDeleteManual(p.id)}
+                              className="bg-red-600 text-white font-black px-3 py-2 border-2 border-gray-900 hover:bg-red-700 text-xs uppercase tracking-wider"
+                            >
+                              Xóa
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'THEM_SP' && (
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -399,58 +462,6 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
           </div>
         </motion.div>
       )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map(p => (
-          <div key={p.id} className={`bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col ${p.isSold ? 'opacity-70 grayscale' : ''}`}>
-            <div className="relative h-48 border-b-4 border-gray-900">
-              <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-              {p.isSold && <div className="absolute top-2 right-2 bg-red-600 text-white font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs transform rotate-12">Đã Bán</div>}
-              {p.isManual && <div className="absolute top-2 left-2 bg-blue-600 text-white font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs">Thủ công</div>}
-              {p.isAnnouncement && <div className="absolute top-2 left-2 bg-yellow-400 text-gray-900 font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs">Thông báo</div>}
-            </div>
-            
-            <div className="p-4 flex-1 flex flex-col">
-              {editingId === p.id ? (
-                <div className="space-y-3 flex-1 text-gray-900">
-                  <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} className="w-full border-2 border-gray-900 p-1 text-sm font-bold" />
-                  <input value={editForm.price} onChange={e => setEditForm({...editForm, price: e.target.value})} className="w-full border-2 border-gray-900 p-1 text-sm font-bold" />
-                  <label className="flex items-center gap-2 font-bold text-sm cursor-pointer">
-                    <input type="checkbox" checked={editForm.isSold} onChange={e => setEditForm({...editForm, isSold: e.target.checked})} className="w-4 h-4 border-2 border-gray-900 accent-red-600" />
-                    Đánh dấu HẾT HÀNG
-                  </label>
-                  <div className="flex gap-2 pt-2">
-                    <button onClick={handleSaveEdit} className="bg-olive-600 text-white font-black px-3 py-1 border-2 border-gray-900 flex-1 text-xs uppercase">Lưu</button>
-                    <button onClick={() => setEditingId(null)} className="bg-gray-200 text-gray-900 font-black px-3 py-1 border-2 border-gray-900 flex-1 text-xs uppercase">Hủy</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h3 className="font-bold text-sm uppercase line-clamp-2 text-gray-900 mb-2">{p.name}</h3>
-                  <p className="font-black text-olive-600 mt-auto mb-4">{p.price}</p>
-                  
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => handleEdit(p)}
-                      className="bg-gray-100 text-gray-900 font-black px-3 py-2 border-2 border-gray-900 hover:bg-gray-200 flex-1 text-xs uppercase tracking-wider"
-                    >
-                      Sửa
-                    </button>
-                    {p.isManual && (
-                      <button 
-                        onClick={() => handleDeleteManual(p.id)}
-                        className="bg-red-600 text-white font-black px-3 py-2 border-2 border-gray-900 hover:bg-red-700 text-xs uppercase tracking-wider"
-                      >
-                        Xóa
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
