@@ -15,6 +15,12 @@ export interface PendingOrder {
   total: number;
   shippingFee: number;
   igMessage: string;
+  customer: {
+    name: string;
+    phone: string;
+    address: string;
+    province: string;
+  };
 }
 
 interface CartContextType {

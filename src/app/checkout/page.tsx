@@ -42,6 +42,12 @@ export default function CheckoutPage() {
       setStep(2);
       setOrderId(pendingOrder.orderId);
       setLockExpireTime(pendingOrder.expireTime);
+      if (pendingOrder.customer) {
+        setName(pendingOrder.customer.name);
+        setPhone(pendingOrder.customer.phone);
+        setAddress(pendingOrder.customer.address);
+        setProvince(pendingOrder.customer.province);
+      }
     }
   }, [pendingOrder]);
 
@@ -135,7 +141,8 @@ export default function CheckoutPage() {
         expireTime: data.expireTime,
         total: finalTotal,
         shippingFee: shippingFee,
-        igMessage: igMessage
+        igMessage: igMessage,
+        customer: { name, phone, address, province }
       });
       setStep(2);
       router.refresh(); // Force client cache to update so homepage shows TẠM GIỮ instantly
