@@ -37,10 +37,32 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      setSelectedFiles(files);
-      const urls = files.map(file => URL.createObjectURL(file));
+      // Append to existing instead of replace
+      const newFiles = [...selectedFiles, ...files];
+      setSelectedFiles(newFiles);
+      const urls = newFiles.map(file => URL.createObjectURL(file));
       setPreviewImages(urls);
     }
+  };
+
+  const moveImage = (index: number, direction: 'left' | 'right') => {
+    if (direction === 'left' && index > 0) {
+      const newFiles = [...selectedFiles];
+      [newFiles[index - 1], newFiles[index]] = [newFiles[index], newFiles[index - 1]];
+      setSelectedFiles(newFiles);
+      setPreviewImages(newFiles.map(file => URL.createObjectURL(file)));
+    } else if (direction === 'right' && index < selectedFiles.length - 1) {
+      const newFiles = [...selectedFiles];
+      [newFiles[index], newFiles[index + 1]] = [newFiles[index + 1], newFiles[index]];
+      setSelectedFiles(newFiles);
+      setPreviewImages(newFiles.map(file => URL.createObjectURL(file)));
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setPreviewImages(newFiles.map(file => URL.createObjectURL(file)));
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -206,8 +228,30 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
 
             <div className="mb-6 bg-cream-100 p-4 border-2 border-gray-900 border-dashed">
               <label className="block font-black text-gray-900 mb-2 uppercase">Hình ảnh Sản Phẩm (Có thể chọn nhiều)</label>
-              <input type="file" accept="image/*" multiple onChange={handleImagePick} className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:border-2 file:border-gray-900 file:bg-gray-900 file:text-white file:font-black file:uppercase hover:file:bg-olive-600 transition-colors cursor-pointer" />
-              <p className="text-xs text-gray-500 mt-2 font-bold">Hoặc dán nhiều link ảnh (cách nhau dấu phẩy):</p>
+              <input type="file" accept="image/*" multiple onChange={handleImagePick} className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:border-2 file:border-gray-900 file:bg-gray-900 file:text-white file:font-black file:uppercase hover:file:bg-olive-600 transition-colors cursor-pointer mb-4" />
+              
+              {previewImages.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-gray-900 mb-2 uppercase">Ảnh đã chọn ({previewImages.length}):</p>
+                  <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+                    {previewImages.map((img, idx) => (
+                      <div key={idx} className="relative w-24 h-24 flex-shrink-0 border-2 border-gray-900 group">
+                        <img src={img} className="w-full h-full object-cover" />
+                        <div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-black px-1.5 py-0.5">{idx + 1}</div>
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-1 transition-opacity">
+                          <div className="flex gap-1">
+                            <button type="button" onClick={() => moveImage(idx, 'left')} className="bg-white text-gray-900 p-1 hover:bg-olive-600 hover:text-white" disabled={idx === 0}>&larr;</button>
+                            <button type="button" onClick={() => moveImage(idx, 'right')} className="bg-white text-gray-900 p-1 hover:bg-olive-600 hover:text-white" disabled={idx === previewImages.length - 1}>&rarr;</button>
+                          </div>
+                          <button type="button" onClick={() => removeImage(idx)} className="bg-red-600 text-white text-xs px-2 py-0.5 uppercase font-bold hover:bg-red-700">Xóa</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-gray-500 font-bold border-t-2 border-gray-900 border-dashed pt-4">Hoặc dán nhiều link ảnh (cách nhau dấu phẩy):</p>
               <input placeholder="https://anh1.jpg, https://anh2.jpg" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="w-full mt-1 border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500 text-xs" />
             </div>
 
