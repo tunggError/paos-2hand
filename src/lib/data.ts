@@ -48,15 +48,23 @@ export async function getAllProducts(): Promise<Product[]> {
       const defaultIsSold = parsed.isSold;
       const defaultIsAnnouncement = parsed.isAnnouncement;
 
-      // Apply overrides if exist
       const overrideStr = overrides[id];
       const override = overrideStr ? JSON.parse(overrideStr) : {};
+
+      let images: string[] = [];
+      if (post.children && post.children.data) {
+        images = post.children.data.map((child: any) => child.media_url).filter(Boolean);
+      }
+      if (images.length === 0 && post.media_url) {
+        images = [post.media_url];
+      }
 
       return {
         id,
         name: override.name !== undefined ? override.name : parsed.name,
         price: override.price !== undefined ? override.price : parsed.price,
         image: post.media_url,
+        images: images,
         isSold: override.isSold !== undefined ? override.isSold : defaultIsSold,
         isAnnouncement: defaultIsAnnouncement,
         condition: parsed.condition,

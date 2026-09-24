@@ -25,10 +25,10 @@ export async function getInstagramPosts(limit = 100): Promise<InstagramPost[]> {
 
   try {
     let allPosts: InstagramPost[] = [];
-    let url: string | null = `https://graph.facebook.com/v19.0/${IG_USER_ID}/media?fields=id,caption,media_type,media_url,permalink,timestamp&limit=${limit}&access_token=${IG_ACCESS_TOKEN}`;
+    let url: string | null = `https://graph.facebook.com/v19.0/${IG_USER_ID}/media?fields=id,caption,media_type,media_url,permalink,timestamp,children%7Bmedia_url,media_type%7D&limit=${limit}&access_token=${IG_ACCESS_TOKEN}`;
     
     while (url && allPosts.length < 500) {
-      const response = await fetch(url, { next: { revalidate: 3600 } }); 
+      const response = await fetch(url, { next: { revalidate: 60 } }); 
       
       if (!response.ok) {
         const errorData = await response.json();
