@@ -14,7 +14,8 @@ export function parseInstagramCaption(caption: string) {
   }
 
   const captionLower = caption.trim().toLowerCase();
-  if (captionLower.startsWith('new drop')) {
+  const firstLine = captionLower.split('\n')[0] || '';
+  if (firstLine.includes('new drop')) {
     isAnnouncement = true;
   }
 
