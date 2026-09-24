@@ -20,6 +20,12 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const [editForm, setEditForm] = useState({ name: '', price: '', isSold: false });
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState<'KHO_HANG' | 'THEM_SP'>('KHO_HANG');
+  
+  // States for Search & Pagination
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 16;
+
   const [addForm, setAddForm] = useState({ 
     name: '', 
     price: '', 
@@ -36,6 +42,20 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   useEffect(() => {
     setProducts(initialProducts);
   }, [initialProducts]);
+
+  // Derived state for filtering and pagination
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.price?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.isSold ? 'đã bán' : 'đang bán').includes(searchQuery.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -273,12 +293,23 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
           </div>
 
           <div className="mb-8 pt-8 border-t-4 border-gray-900">
-            <h2 className="text-2xl font-black uppercase text-gray-900 mb-6">Danh sách Sản Phẩm</h2>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+              <h2 className="text-2xl font-black uppercase text-gray-900">Danh sách Sản Phẩm</h2>
+              <div className="w-full md:w-72">
+                <input 
+                  type="text" 
+                  placeholder="Tìm kiếm sản phẩm (tên, giá)..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full border-2 border-gray-900 px-4 py-2 bg-white text-sm font-bold placeholder-gray-500 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] focus:outline-none focus:ring-2 focus:ring-olive-600"
+                />
+              </div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map(p => (
+              {paginatedProducts.map(p => (
                 <div key={p.id} className={`bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col ${p.isSold ? 'opacity-70 grayscale' : ''}`}>
                   <div className="relative h-48 border-b-4 border-gray-900">
-                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={p.image} alt={p.name} loading="lazy" className="w-full h-full object-cover" />
                     {p.isSold && <div className="absolute top-2 right-2 bg-red-600 text-white font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs transform rotate-12">Đã Bán</div>}
                     {p.isManual && <div className="absolute top-2 left-2 bg-blue-600 text-white font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs">Thủ công</div>}
                     {p.isAnnouncement && <div className="absolute top-2 left-2 bg-yellow-400 text-gray-900 font-black px-2 py-1 border-2 border-gray-900 uppercase text-xs">Thông báo</div>}
@@ -325,6 +356,31 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8 pt-8">
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="bg-white text-gray-900 px-4 py-2 font-black uppercase tracking-widest border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-900"
+                >
+                  &larr; Trước
+                </button>
+                
+                <span className="font-bold text-gray-900 bg-cream-200 px-4 py-2 border-2 border-gray-900">
+                  {currentPage} / {totalPages}
+                </span>
+
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="bg-white text-gray-900 px-4 py-2 font-black uppercase tracking-widest border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-900"
+                >
+                  Sau &rarr;
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
