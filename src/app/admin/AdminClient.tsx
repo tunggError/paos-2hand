@@ -33,6 +33,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   });
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -48,21 +49,56 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const moveImage = (index: number, direction: 'left' | 'right') => {
     if (direction === 'left' && index > 0) {
       const newFiles = [...selectedFiles];
+      const newUrls = [...previewImages];
       [newFiles[index - 1], newFiles[index]] = [newFiles[index], newFiles[index - 1]];
+      [newUrls[index - 1], newUrls[index]] = [newUrls[index], newUrls[index - 1]];
       setSelectedFiles(newFiles);
-      setPreviewImages(newFiles.map(file => URL.createObjectURL(file)));
+      setPreviewImages(newUrls);
     } else if (direction === 'right' && index < selectedFiles.length - 1) {
       const newFiles = [...selectedFiles];
+      const newUrls = [...previewImages];
       [newFiles[index], newFiles[index + 1]] = [newFiles[index + 1], newFiles[index]];
+      [newUrls[index], newUrls[index + 1]] = [newUrls[index + 1], newUrls[index]];
       setSelectedFiles(newFiles);
-      setPreviewImages(newFiles.map(file => URL.createObjectURL(file)));
+      setPreviewImages(newUrls);
     }
   };
 
   const removeImage = (index: number) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newUrls = previewImages.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
-    setPreviewImages(newFiles.map(file => URL.createObjectURL(file)));
+    setPreviewImages(newUrls);
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnter = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const newFiles = [...selectedFiles];
+    const newUrls = [...previewImages];
+    
+    const draggedFile = newFiles[draggedIndex];
+    const draggedUrl = newUrls[draggedIndex];
+    
+    newFiles.splice(draggedIndex, 1);
+    newUrls.splice(draggedIndex, 1);
+    
+    newFiles.splice(targetIndex, 0, draggedFile);
+    newUrls.splice(targetIndex, 0, draggedUrl);
+    
+    setSelectedFiles(newFiles);
+    setPreviewImages(newUrls);
+    setDraggedIndex(targetIndex);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -235,15 +271,20 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
                   <p className="text-xs font-bold text-gray-900 mb-2 uppercase">Ảnh đã chọn ({previewImages.length}):</p>
                   <div className="flex flex-wrap gap-2 pb-2">
                     {previewImages.map((img, idx) => (
-                      <div key={idx} className="relative w-24 h-24 flex-shrink-0 border-2 border-gray-900 group">
-                        <img src={img} className="w-full h-full object-cover" />
-                        <div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-black px-1.5 py-0.5">{idx + 1}</div>
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-1 transition-opacity">
-                          <div className="flex gap-1">
-                            <button type="button" onClick={() => moveImage(idx, 'left')} className="bg-white text-gray-900 p-1 hover:bg-olive-600 hover:text-white" disabled={idx === 0}>&larr;</button>
-                            <button type="button" onClick={() => moveImage(idx, 'right')} className="bg-white text-gray-900 p-1 hover:bg-olive-600 hover:text-white" disabled={idx === previewImages.length - 1}>&rarr;</button>
-                          </div>
+                      <div 
+                        key={img} 
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, idx)}
+                        onDragEnter={(e) => handleDragEnter(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => e.preventDefault()}
+                        className={`relative w-24 h-24 flex-shrink-0 border-2 border-gray-900 group cursor-move ${draggedIndex === idx ? 'opacity-50 border-dashed bg-gray-200' : ''}`}
+                      >
+                        <img src={img} className="w-full h-full object-cover pointer-events-none" />
+                        <div className="absolute top-0 right-0 bg-gray-900 text-white text-[10px] font-black px-1.5 py-0.5 z-10">{idx + 1}</div>
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-1 transition-opacity z-20">
                           <button type="button" onClick={() => removeImage(idx)} className="bg-red-600 text-white text-xs px-2 py-0.5 uppercase font-bold hover:bg-red-700">Xóa</button>
+                          <span className="text-white text-[10px] font-bold uppercase mt-1">Kéo thả</span>
                         </div>
                       </div>
                     ))}
