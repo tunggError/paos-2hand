@@ -601,12 +601,18 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
                         <p className="text-sm font-bold text-gray-500 max-w-[200px]">{order.customer.address}, {order.customer.province}</p>
                       </td>
                       <td className="p-4 border-2 border-gray-900 align-top">
-                        <ul className="list-disc pl-4 text-sm font-bold text-gray-700">
+                        <div className="space-y-3">
                           {order.cart.map((item: any) => (
-                            <li key={item.id}>{item.name} ({item.price})</li>
+                            <div key={item.id} className="flex gap-3 items-center">
+                              <img src={item.image} alt={item.name} className="w-12 h-12 object-cover border-2 border-gray-900" />
+                              <div className="flex-1">
+                                <p className="text-sm font-bold text-gray-900 leading-tight">{item.name}</p>
+                                <p className="text-xs font-black text-gray-600">{item.price}</p>
+                              </div>
+                            </div>
                           ))}
-                        </ul>
-                        <p className="text-xs font-bold text-olive-600 mt-2">+ Ship: {order.shippingFee.toLocaleString('vi-VN')}đ</p>
+                        </div>
+                        <p className="text-xs font-black text-red-600 mt-3 pt-2 border-t-2 border-gray-200">+ Ship: {order.shippingFee.toLocaleString('vi-VN')}đ</p>
                       </td>
                       <td className="p-4 border-2 border-gray-900 align-top font-black text-red-600 text-lg">
                         {order.total.toLocaleString('vi-VN')}đ
