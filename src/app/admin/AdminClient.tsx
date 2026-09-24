@@ -21,7 +21,28 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
 
   // States for Adding Manual Product
   const [isAdding, setIsAdding] = useState(false);
-  const [addForm, setAddForm] = useState({ name: '', price: '', image: '' });
+  const [isUploading, setIsUploading] = useState(false);
+  const [addForm, setAddForm] = useState({ 
+    name: '', 
+    price: '', 
+    image: '', 
+    description: '',
+    condition: '9/10',
+    n: 0,
+    d: 0
+  });
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Create local preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewImage(objectUrl);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,37 +61,53 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
 
   const handleSaveEdit = async () => {
     if (!editingId) return;
-    
-    // Optimistic UI update
     setProducts(products.map(p => p.id === editingId ? { ...p, ...editForm } : p));
     setEditingId(null);
-    
-    // Save to DB
-    try {
-      await setProductOverride(editingId, editForm);
-    } catch (err) {
-      alert("Lỗi khi lưu! Vui lòng thử lại.");
-    }
+    try { await setProductOverride(editingId, editForm); } catch (err) {}
   };
 
   const handleDeleteManual = async (id: string) => {
-    if (!confirm("Bạn có chắc muốn xóa sản phẩm thêm thủ công này không?")) return;
-    
+    if (!confirm("Xóa nhé?")) return;
     setProducts(products.filter(p => p.id !== id));
-    try {
-      await deleteManualProduct(id);
-    } catch (err) {
-      alert("Lỗi khi xóa!");
-    }
+    try { await deleteManualProduct(id); } catch (err) {}
   };
 
   const handleAddManual = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUploading(true);
+
+    let imageUrl = addForm.image;
+
+    // If there's a file, upload it first
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        
+        // Dynamic import to avoid client-side bloat, though we have a server action
+        const { uploadImage } = await import('./actions');
+        imageUrl = await uploadImage(formData);
+      } catch (err) {
+        alert("Lỗi khi tải ảnh lên!");
+        setIsUploading(false);
+        return;
+      }
+    }
+
+    if (!imageUrl) {
+      alert("Vui lòng chọn ảnh!");
+      setIsUploading(false);
+      return;
+    }
+
     const newProduct: Product = {
       id: 'manual_' + Date.now(),
       name: addForm.name,
       price: addForm.price,
-      image: addForm.image,
+      image: imageUrl,
+      description: addForm.description,
+      condition: addForm.condition,
+      measurements: { n: addForm.n, d: addForm.d },
       isSold: false,
       isAnnouncement: false,
       isManual: true
@@ -78,7 +115,10 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     
     setProducts([newProduct, ...products]);
     setIsAdding(false);
-    setAddForm({ name: '', price: '', image: '' });
+    setIsUploading(false);
+    setAddForm({ name: '', price: '', image: '', description: '', condition: '9/10', n: 0, d: 0 });
+    setPreviewImage(null);
+    setSelectedFile(null);
     
     try {
       await addManualProduct(newProduct);
@@ -120,22 +160,104 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
       </div>
 
       {isAdding && (
-        <motion.form 
+        <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          onSubmit={handleAddManual} 
-          className="bg-white border-4 border-gray-900 p-6 mb-8 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)]"
+          className="bg-white border-4 border-gray-900 p-6 mb-8 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] flex flex-col lg:flex-row gap-8"
         >
-          <h3 className="font-black uppercase text-lg mb-4 text-gray-900 border-b-2 border-gray-900 pb-2">Thêm Sản phẩm Mới</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <input required placeholder="Tên sản phẩm" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
-            <input required placeholder="Giá (VD: 350.000đ)" value={addForm.price} onChange={e => setAddForm({...addForm, price: e.target.value})} className="border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
-            <input required placeholder="Link ảnh URL" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+          {/* Form */}
+          <form onSubmit={handleAddManual} className="flex-1">
+            <h3 className="font-black uppercase text-lg mb-4 text-gray-900 border-b-2 border-gray-900 pb-2">Thông tin Sản phẩm</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Tên sản phẩm</label>
+                <input required placeholder="VD: ÁO SƠ MI CARHARTT" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="w-full border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+              </div>
+              <div>
+                <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Giá (Kèm chữ đ)</label>
+                <input required placeholder="VD: 350.000đ" value={addForm.price} onChange={e => setAddForm({...addForm, price: e.target.value})} className="w-full border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Độ mới (Cond)</label>
+                <input placeholder="VD: 9/10" value={addForm.condition} onChange={e => setAddForm({...addForm, condition: e.target.value})} className="w-full border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+              </div>
+              <div>
+                <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Ngang (cm)</label>
+                <input type="number" value={addForm.n || ''} onChange={e => setAddForm({...addForm, n: Number(e.target.value)})} className="w-full border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+              </div>
+              <div>
+                <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Dài (cm)</label>
+                <input type="number" value={addForm.d || ''} onChange={e => setAddForm({...addForm, d: Number(e.target.value)})} className="w-full border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500" />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Mô tả thêm (Tùy chọn)</label>
+              <textarea placeholder="Ghi chú về chất liệu, lỗi nhỏ (nếu có)..." value={addForm.description} onChange={e => setAddForm({...addForm, description: e.target.value})} className="w-full border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500 h-20 resize-none" />
+            </div>
+
+            <div className="mb-6 bg-cream-100 p-4 border-2 border-gray-900 border-dashed">
+              <label className="block font-black text-gray-900 mb-2 uppercase">Hình ảnh Sản Phẩm</label>
+              <input type="file" accept="image/*" onChange={handleImagePick} className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:border-2 file:border-gray-900 file:bg-gray-900 file:text-white file:font-black file:uppercase hover:file:bg-olive-600 transition-colors cursor-pointer" />
+              <p className="text-xs text-gray-500 mt-2 font-bold">Hoặc dùng ảnh đã tải lên:</p>
+              <input placeholder="Nếu không chọn ảnh máy tính, dán URL vào đây" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="w-full mt-1 border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500 text-xs" />
+            </div>
+
+            <button type="submit" disabled={isUploading} className="w-full bg-olive-600 text-white font-black px-6 py-4 border-2 border-gray-900 uppercase shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isUploading ? 'ĐANG TẢI LÊN...' : 'ĐĂNG BÁN SẢN PHẨM NÀY'}
+            </button>
+          </form>
+
+          {/* Live Preview Area */}
+          <div className="w-full lg:w-72 border-l-0 lg:border-l-4 lg:border-gray-900 lg:pl-8 pt-8 lg:pt-0">
+            <h3 className="font-black uppercase text-sm mb-4 text-gray-900 bg-cream-200 inline-block px-2 py-1 border-2 border-gray-900 shadow-[2px_2px_0px_0px_rgba(17,24,39,1)]">
+              XEM TRƯỚC (LIVE PREVIEW)
+            </h3>
+            <div className="pointer-events-none transform scale-90 origin-top-left lg:origin-top w-[111%]">
+              <div className="bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col h-full">
+                <div className="relative h-[250px] border-b-4 border-gray-900 bg-gray-100 flex items-center justify-center">
+                  {(previewImage || addForm.image) ? (
+                    <img src={previewImage || addForm.image} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-gray-400 font-bold uppercase text-xs text-center px-4">Chưa có ảnh</span>
+                  )}
+                  <div className="absolute bottom-0 left-0 bg-gray-900 text-white text-xs font-black uppercase px-2 py-1 border-t-2 border-r-2 border-gray-900">
+                    Cond {addForm.condition || '9/10'}
+                  </div>
+                </div>
+                
+                <div className="p-4 flex-1 flex flex-col bg-white">
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <h3 className="font-black text-gray-900 uppercase text-lg leading-tight line-clamp-2">
+                      {addForm.name || 'TÊN SẢN PHẨM'}
+                    </h3>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className="inline-block bg-cream-200 border-2 border-gray-900 px-2 py-0.5 text-xs font-bold text-gray-900 whitespace-nowrap">
+                      Ngang: {addForm.n || 0}
+                    </span>
+                    <span className="inline-block bg-cream-200 border-2 border-gray-900 px-2 py-0.5 text-xs font-bold text-gray-900 whitespace-nowrap">
+                      Dài: {addForm.d || 0}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                    {addForm.description || 'Mô tả sản phẩm sẽ hiện ở đây...'}
+                  </p>
+                  <div className="mt-auto flex items-center justify-between pt-4 border-t-2 border-gray-900 border-dashed">
+                    <span className="font-black text-xl text-olive-600">{addForm.price || '0đ'}</span>
+                    <div className="bg-gray-900 text-white font-black px-3 py-1.5 uppercase text-xs">
+                      SHOP NOW
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <button type="submit" className="bg-olive-600 text-white font-black px-6 py-2 border-2 border-gray-900 uppercase">
-            Lưu Sản Phẩm
-          </button>
-        </motion.form>
+        </motion.div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

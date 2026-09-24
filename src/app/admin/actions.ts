@@ -2,6 +2,7 @@
 
 import { redis } from '@/lib/redis';
 import { revalidatePath } from 'next/cache';
+import { put } from '@vercel/blob';
 
 export async function setProductOverride(id: string, override: { price?: string; isSold?: boolean; name?: string }) {
   if (!redis) throw new Error("Database not connected");
@@ -17,7 +18,27 @@ export async function setProductOverride(id: string, override: { price?: string;
   revalidatePath('/admin');
 }
 
-export async function addManualProduct(product: { id: string; name: string; price: string; image: string; isSold: boolean }) {
+export async function uploadImage(formData: FormData) {
+  const file = formData.get('file') as File;
+  if (!file) throw new Error("No file provided");
+
+  const blob = await put(file.name, file, {
+    access: 'public',
+  });
+
+  return blob.url;
+}
+
+export async function addManualProduct(product: { 
+  id: string; 
+  name: string; 
+  price: string; 
+  image: string; 
+  isSold: boolean;
+  description?: string;
+  condition?: string;
+  measurements?: { n: number; d: number };
+}) {
   if (!redis) throw new Error("Database not connected");
   
   await redis.lpush('manual_products', JSON.stringify(product));
