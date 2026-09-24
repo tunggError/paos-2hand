@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useCart } from '@/context/CartContext';
+import { useState, useEffect, Suspense } from 'react';
+import { useCart, PendingOrder } from '@/context/CartContext';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const PROVINCES = [
   "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", 
@@ -22,9 +22,13 @@ const PROVINCES = [
   "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"
 ];
 
-export default function CheckoutPage() {
-  const { cart, cartTotal, clearCart, pendingOrder, setPendingOrder, clearPendingOrder } = useCart();
+function CheckoutContent() {
+  const { cart, cartTotal, clearCart, pendingOrders, addPendingOrder, removePendingOrder } = useCart();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryOrderId = searchParams.get('orderId');
+  
+  const pendingOrder = pendingOrders.find(o => o.orderId === queryOrderId) || null;
   
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState('');
@@ -52,14 +56,13 @@ export default function CheckoutPage() {
   }, [pendingOrder]);
 
   useEffect(() => {
-    if (step === 2 && lockExpireTime) {
+    if (step === 2 && lockExpireTime && pendingOrder) {
       const interval = setInterval(() => {
         const remaining = lockExpireTime - Date.now();
         if (remaining <= 0) {
           clearInterval(interval);
           alert("Hết thời gian giữ hàng (15 phút). Giỏ hàng của bạn đã bị hủy.");
-          clearCart();
-          clearPendingOrder();
+          removePendingOrder(pendingOrder.orderId);
           window.location.href = '/';
         } else {
           setLockTimeLeft(Math.floor(remaining / 1000));
@@ -67,7 +70,7 @@ export default function CheckoutPage() {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [step, lockExpireTime, clearCart, clearPendingOrder]);
+  }, [step, lockExpireTime, pendingOrder, removePendingOrder]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -77,6 +80,7 @@ export default function CheckoutPage() {
 
   const shippingFee = province === 'Hà Nội' ? 25000 : (province ? 35000 : 0);
   const finalTotal = pendingOrder ? pendingOrder.total : cartTotal + shippingFee;
+  const currentItems = pendingOrder ? pendingOrder.items : cart;
 
   // Create VietQR URL using orderId
   const qrUrl = `https://img.vietqr.io/image/TCB-2107999999999-compact2.png?amount=${finalTotal}&addInfo=${orderId}&accountName=NGUYEN%20THANH%20TUNG`;
@@ -85,13 +89,13 @@ export default function CheckoutPage() {
   const igMessage = pendingOrder ? pendingOrder.igMessage : encodeURIComponent(
     `Chào shop, mình đã CK đơn hàng: ${orderId}\n\n` +
     `Người nhận: ${name}\nSĐT: ${phone}\nĐịa chỉ: ${address}, ${province}\n\n` +
-    `Sản phẩm:\n${cart.map((item, i) => `${i + 1}. ${item.name} (${item.price})`).join('\n')}\n\n` +
+    `Sản phẩm:\n${currentItems.map((item, i) => `${i + 1}. ${item.name} (${item.price})`).join('\n')}\n\n` +
     `TỔNG ĐÃ TT: ${finalTotal.toLocaleString('vi-VN')}đ`
   );
   
   const igProfile = `https://instagram.com/paos.2hand`;
 
-  if (cart.length === 0) {
+  if (!pendingOrder && cart.length === 0) {
     return (
       <div className="flex-1 bg-cream-100 flex flex-col items-center justify-center p-4">
         <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-10 text-center max-w-md w-full">
@@ -136,16 +140,19 @@ export default function CheckoutPage() {
       
       setOrderId(data.orderId);
       setLockExpireTime(data.expireTime);
-      setPendingOrder({
+      addPendingOrder({
         orderId: data.orderId,
         expireTime: data.expireTime,
         total: finalTotal,
         shippingFee: shippingFee,
         igMessage: igMessage,
-        customer: { name, phone, address, province }
+        customer: { name, phone, address, province },
+        items: cart
       });
-      setStep(2);
+      clearCart(); // Dọn giỏ hàng để có thể mua thêm món khác
+      
       router.refresh(); // Force client cache to update so homepage shows TẠM GIỮ instantly
+      router.push(`/checkout?orderId=${data.orderId}`); // Navigate to specific order
     } catch (err) {
       alert("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
@@ -209,7 +216,7 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-black uppercase tracking-widest mb-6 border-b-4 border-gray-900 pb-4 text-gray-900 shrink-0">Đơn hàng của bạn</h2>
               
               <div className="space-y-3 mb-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
-                {cart.map(item => (
+                {currentItems.map(item => (
                   <div key={item.id} className="flex gap-3 p-2.5 bg-cream-100 border-2 border-gray-900">
                     <img src={item.image} alt={item.name} className="w-14 h-14 object-cover border-2 border-gray-900" />
                     <div className="flex-1">
@@ -223,7 +230,7 @@ export default function CheckoutPage() {
               <div className="border-t-4 border-gray-900 pt-4 space-y-2 shrink-0">
                 <div className="flex justify-between items-center text-gray-600 font-bold text-sm">
                   <span>Tiền hàng:</span>
-                  <span>{cartTotal.toLocaleString('vi-VN')}đ</span>
+                  <span>{currentItems.reduce((acc, item) => acc + (parseInt(item.price.replace(/\D/g, ''), 10) || 0), 0).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between items-center text-gray-600 font-bold text-sm">
                   <span>Phí vận chuyển:</span>
@@ -295,5 +302,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 font-black uppercase text-2xl">Đang tải...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

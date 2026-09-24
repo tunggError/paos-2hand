@@ -21,6 +21,7 @@ export interface PendingOrder {
     address: string;
     province: string;
   };
+  items: CartItem[];
 }
 
 interface CartContextType {
@@ -31,9 +32,9 @@ interface CartContextType {
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
   cartTotal: number;
-  pendingOrder: PendingOrder | null;
-  setPendingOrder: (order: PendingOrder | null) => void;
-  clearPendingOrder: () => void;
+  pendingOrders: PendingOrder[];
+  addPendingOrder: (order: PendingOrder) => void;
+  removePendingOrder: (orderId: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -42,7 +43,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [pendingOrder, setPendingOrderState] = useState<PendingOrder | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<PendingOrder[]>([]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -55,16 +56,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    const savedOrder = localStorage.getItem('paos_pending_order');
-    if (savedOrder) {
+    const savedOrders = localStorage.getItem('paos_pending_orders');
+    if (savedOrders) {
       try {
-        const parsed = JSON.parse(savedOrder);
-        if (parsed.expireTime > Date.now()) {
-          setPendingOrderState(parsed);
-        } else {
-          localStorage.removeItem('paos_pending_order');
-          localStorage.removeItem('paos_cart'); // clear cart if expired
-          setCart([]);
+        const parsed: PendingOrder[] = JSON.parse(savedOrders);
+        const now = Date.now();
+        const validOrders = parsed.filter(o => o.expireTime > now);
+        setPendingOrders(validOrders);
+        if (validOrders.length !== parsed.length) {
+          localStorage.setItem('paos_pending_orders', JSON.stringify(validOrders));
         }
       } catch(e) {}
     }
@@ -75,6 +75,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('paos_cart', JSON.stringify(cart));
     }
   }, [cart, isMounted]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('paos_pending_orders', JSON.stringify(pendingOrders));
+    }
+  }, [pendingOrders, isMounted]);
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
@@ -101,25 +107,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return total + priceNum;
   }, 0);
 
-  const setPendingOrder = (order: PendingOrder | null) => {
-    setPendingOrderState(order);
-    if (order) {
-      localStorage.setItem('paos_pending_order', JSON.stringify(order));
-    } else {
-      localStorage.removeItem('paos_pending_order');
-    }
+  const addPendingOrder = (order: PendingOrder) => {
+    setPendingOrders(prev => [...prev, order]);
   };
 
-  const clearPendingOrder = () => {
-    setPendingOrderState(null);
-    localStorage.removeItem('paos_pending_order');
+  const removePendingOrder = (orderId: string) => {
+    setPendingOrders(prev => prev.filter(o => o.orderId !== orderId));
   };
 
   return (
     <CartContext.Provider value={{ 
       cart, addToCart, removeFromCart, clearCart, 
       isCartOpen, setIsCartOpen, cartTotal,
-      pendingOrder, setPendingOrder, clearPendingOrder
+      pendingOrders, addPendingOrder, removePendingOrder
     }}>
       {children}
     </CartContext.Provider>
