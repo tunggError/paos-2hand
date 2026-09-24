@@ -69,6 +69,7 @@ export default async function Home() {
                     description={item.description || "Hàng tuyển chọn"}
                     price={item.price}
                     image={item.image}
+                    images={item.images}
                     isSold={item.isSold}
                   />
                 ))}

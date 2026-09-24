@@ -36,6 +36,7 @@ export default async function ProductsPage() {
                 description={item.description || "Hàng 2hand tuyển chọn."}
                 price={item.price}
                 image={item.image}
+                images={item.images}
                 isSold={item.isSold}
               />
             ))}

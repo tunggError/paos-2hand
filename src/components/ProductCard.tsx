@@ -6,6 +6,7 @@ import { useCart } from '@/context/CartContext';
 interface ProductCardProps {
   id: string;
   image: string;
+  images?: string[];
   name: string;
   condition: string;
   measurements: { n: number; d: number };
@@ -17,6 +18,7 @@ interface ProductCardProps {
 export default function ProductCard({
   id,
   image,
+  images,
   name,
   condition,
   measurements,
@@ -40,13 +42,19 @@ export default function ProductCard({
       className="group flex flex-col bg-white rounded-none overflow-hidden border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] hover:-translate-y-2 transition-transform duration-300 relative"
     >
       <Link href={`/product/${id}`} className="relative aspect-[4/5] w-full overflow-hidden bg-cream-100 block border-b-4 border-gray-900">
-        <motion.img 
-          src={image} 
-          alt={name} 
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.4 }}
-          className={`object-cover w-full h-full ${isSold ? 'grayscale opacity-70' : ''}`}
-        />
+        <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+          {(images && images.length > 0 ? images : [image]).map((img, idx) => (
+            <div key={idx} className="min-w-full h-full flex-shrink-0 snap-center relative">
+              <motion.img 
+                src={img} 
+                alt={`${name} - ${idx + 1}`} 
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.4 }}
+                className={`object-cover w-full h-full ${isSold ? 'grayscale opacity-70' : ''}`}
+              />
+            </div>
+          ))}
+        </div>
         {isSold && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
             <span className="bg-red-600 text-white font-black px-6 py-2 rounded-full text-lg uppercase tracking-widest shadow-lg transform -rotate-12">

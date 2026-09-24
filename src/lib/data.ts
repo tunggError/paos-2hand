@@ -13,6 +13,7 @@ export type Product = {
   condition?: string;
   measurements?: { n: number; d: number };
   description?: string;
+  images?: string[];
   post?: any;
 };
 

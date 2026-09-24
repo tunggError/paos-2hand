@@ -31,16 +31,15 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     n: 0,
     d: 0
   });
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      // Create local preview
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewImage(objectUrl);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setSelectedFiles(files);
+      const urls = files.map(file => URL.createObjectURL(file));
+      setPreviewImages(urls);
     }
   };
 
@@ -76,17 +75,21 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     e.preventDefault();
     setIsUploading(true);
 
-    let imageUrl = addForm.image;
+    let imageUrls: string[] = addForm.image ? addForm.image.split(',').map(u => u.trim()) : [];
 
-    // If there's a file, upload it first
-    if (selectedFile) {
+    if (selectedFiles.length > 0) {
       try {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        
-        // Dynamic import to avoid client-side bloat, though we have a server action
         const { uploadImage } = await import('./actions');
-        imageUrl = await uploadImage(formData);
+        
+        // Upload all files in parallel
+        const uploadPromises = selectedFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          return await uploadImage(formData);
+        });
+        
+        const uploadedUrls = await Promise.all(uploadPromises);
+        imageUrls = [...imageUrls, ...uploadedUrls];
       } catch (err) {
         alert("Lỗi khi tải ảnh lên!");
         setIsUploading(false);
@@ -94,7 +97,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
       }
     }
 
-    if (!imageUrl) {
+    if (imageUrls.length === 0) {
       alert("Vui lòng chọn ảnh!");
       setIsUploading(false);
       return;
@@ -104,7 +107,8 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
       id: 'manual_' + Date.now(),
       name: addForm.name,
       price: addForm.price,
-      image: imageUrl,
+      image: imageUrls[0], // First image as main
+      images: imageUrls,
       description: addForm.description,
       condition: addForm.condition,
       measurements: { n: addForm.n, d: addForm.d },
@@ -117,8 +121,8 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     setIsAdding(false);
     setIsUploading(false);
     setAddForm({ name: '', price: '', image: '', description: '', condition: '9/10', n: 0, d: 0 });
-    setPreviewImage(null);
-    setSelectedFile(null);
+    setPreviewImages([]);
+    setSelectedFiles([]);
     
     try {
       await addManualProduct(newProduct);
@@ -201,10 +205,10 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
             </div>
 
             <div className="mb-6 bg-cream-100 p-4 border-2 border-gray-900 border-dashed">
-              <label className="block font-black text-gray-900 mb-2 uppercase">Hình ảnh Sản Phẩm</label>
-              <input type="file" accept="image/*" onChange={handleImagePick} className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:border-2 file:border-gray-900 file:bg-gray-900 file:text-white file:font-black file:uppercase hover:file:bg-olive-600 transition-colors cursor-pointer" />
-              <p className="text-xs text-gray-500 mt-2 font-bold">Hoặc dùng ảnh đã tải lên:</p>
-              <input placeholder="Nếu không chọn ảnh máy tính, dán URL vào đây" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="w-full mt-1 border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500 text-xs" />
+              <label className="block font-black text-gray-900 mb-2 uppercase">Hình ảnh Sản Phẩm (Có thể chọn nhiều)</label>
+              <input type="file" accept="image/*" multiple onChange={handleImagePick} className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:border-2 file:border-gray-900 file:bg-gray-900 file:text-white file:font-black file:uppercase hover:file:bg-olive-600 transition-colors cursor-pointer" />
+              <p className="text-xs text-gray-500 mt-2 font-bold">Hoặc dán nhiều link ảnh (cách nhau dấu phẩy):</p>
+              <input placeholder="https://anh1.jpg, https://anh2.jpg" value={addForm.image} onChange={e => setAddForm({...addForm, image: e.target.value})} className="w-full mt-1 border-2 border-gray-900 p-2 font-bold text-gray-900 placeholder-gray-500 text-xs" />
             </div>
 
             <button type="submit" disabled={isUploading} className="w-full bg-olive-600 text-white font-black px-6 py-4 border-2 border-gray-900 uppercase shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -219,13 +223,19 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
             </h3>
             <div className="pointer-events-none transform scale-90 origin-top-left lg:origin-top w-[111%]">
               <div className="bg-white border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] flex flex-col h-full">
-                <div className="relative h-[250px] border-b-4 border-gray-900 bg-gray-100 flex items-center justify-center">
-                  {(previewImage || addForm.image) ? (
-                    <img src={previewImage || addForm.image} alt="Preview" className="w-full h-full object-cover" />
+                <div className="relative h-[250px] border-b-4 border-gray-900 bg-gray-100 flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+                  {previewImages.length > 0 || addForm.image ? (
+                    (previewImages.length > 0 ? previewImages : addForm.image.split(',').map(u => u.trim())).map((img, idx) => (
+                      <div key={idx} className="min-w-full h-full flex-shrink-0 snap-center relative">
+                        <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))
                   ) : (
-                    <span className="text-gray-400 font-bold uppercase text-xs text-center px-4">Chưa có ảnh</span>
+                    <div className="min-w-full h-full flex items-center justify-center">
+                      <span className="text-gray-400 font-bold uppercase text-xs text-center px-4">Chưa có ảnh</span>
+                    </div>
                   )}
-                  <div className="absolute bottom-0 left-0 bg-gray-900 text-white text-xs font-black uppercase px-2 py-1 border-t-2 border-r-2 border-gray-900">
+                  <div className="absolute bottom-0 left-0 bg-gray-900 text-white text-xs font-black uppercase px-2 py-1 border-t-2 border-r-2 border-gray-900 z-10">
                     Cond {addForm.condition || '9/10'}
                   </div>
                 </div>

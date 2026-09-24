@@ -34,6 +34,7 @@ export async function addManualProduct(product: {
   name: string; 
   price: string; 
   image: string; 
+  images?: string[];
   isSold: boolean;
   description?: string;
   condition?: string;
