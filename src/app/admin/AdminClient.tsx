@@ -209,10 +209,51 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     );
   }
 
+  // Dashboard Calculations
+  const totalProducts = products.length;
+  const soldProducts = products.filter(p => p.isSold).length;
+  const availableProducts = totalProducts - soldProducts;
+
+  const totalRevenue = products.reduce((acc, p) => {
+    if (p.isSold && p.price) {
+      const numStr = p.price.replace(/[^\d]/g, '');
+      const num = parseInt(numStr, 10);
+      if (!isNaN(num)) return acc + num;
+    }
+    return acc;
+  }, 0);
+  
+  const formatMoney = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  };
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-black uppercase text-gray-900">Quản lý Kho Hàng</h2>
+      {/* Dashboard Section */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-black uppercase text-gray-900 mb-6">Tổng Quan Kho Hàng</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+            <h3 className="font-bold text-gray-500 uppercase text-xs mb-2 tracking-widest">Tổng Sản Phẩm</h3>
+            <p className="text-4xl font-black text-gray-900">{totalProducts}</p>
+          </div>
+          <div className="bg-olive-600 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+            <h3 className="font-bold text-cream-200 uppercase text-xs mb-2 tracking-widest">Đang Bán</h3>
+            <p className="text-4xl font-black text-white">{availableProducts}</p>
+          </div>
+          <div className="bg-red-600 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+            <h3 className="font-bold text-red-200 uppercase text-xs mb-2 tracking-widest">Đã Bán</h3>
+            <p className="text-4xl font-black text-white">{soldProducts}</p>
+          </div>
+          <div className="bg-yellow-400 border-4 border-gray-900 p-6 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)]">
+            <h3 className="font-bold text-yellow-900 uppercase text-xs mb-2 tracking-widest">Doanh Thu Ước Tính</h3>
+            <p className="text-3xl font-black text-gray-900 line-clamp-1" title={formatMoney(totalRevenue)}>{formatMoney(totalRevenue)}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-8 pt-8 border-t-4 border-gray-900">
+        <h2 className="text-2xl font-black uppercase text-gray-900">Quản lý Sản Phẩm</h2>
         <button 
           onClick={() => setIsAdding(!isAdding)}
           className="bg-gray-900 text-white font-black px-6 py-2 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 uppercase"
