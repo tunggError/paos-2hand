@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { redis } from '@/lib/redis';
 
 function generateOrderId() {
@@ -65,6 +66,9 @@ export async function POST(req: Request) {
     pipeline.hset('orders', orderId, JSON.stringify(orderData));
     
     await pipeline.exec();
+
+    // Force instant UI update across all cached pages
+    revalidatePath('/', 'layout');
 
     return NextResponse.json({ success: true, orderId, expireTime });
   } catch (error) {
