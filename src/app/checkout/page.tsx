@@ -80,13 +80,12 @@ export default function CheckoutPage() {
       <div className="container mx-auto max-w-5xl">
         <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8 text-center text-gray-900">Thanh Toán</h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Form & Summary */}
-          <div className="space-y-8">
-            {/* Form */}
-            <div className={`bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8 ${step === 2 ? 'opacity-70 grayscale pointer-events-none' : ''}`}>
-              <div className="flex justify-between items-center mb-6 border-b-4 border-gray-900 pb-4">
-                <h2 className="text-2xl font-black uppercase tracking-widest text-gray-900">1. Giao Hàng</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Column 1: Form */}
+          <div className="h-full">
+            <div className={`bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 flex flex-col h-full ${step === 2 ? 'opacity-70 grayscale pointer-events-none' : ''}`}>
+              <div className="flex justify-between items-center mb-6 border-b-4 border-gray-900 pb-4 shrink-0">
+                <h2 className="text-xl font-black uppercase tracking-widest text-gray-900">1. Giao Hàng</h2>
                 {step === 2 && (
                   <button onClick={() => setStep(1)} className="bg-gray-900 text-white text-xs font-black uppercase px-3 py-1 pointer-events-auto">
                     Sửa
@@ -94,65 +93,67 @@ export default function CheckoutPage() {
                 )}
               </div>
               
-              <form onSubmit={handleContinue} className="space-y-4">
+              <form onSubmit={handleContinue} className="space-y-4 flex-1 flex flex-col">
                 <div>
-                  <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Họ và Tên</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} placeholder="Tên người nhận" className="w-full border-2 border-gray-900 p-3 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100" />
+                  <label className="block font-bold text-gray-900 text-xs mb-1 uppercase">Họ và Tên</label>
+                  <input required value={name} onChange={e => setName(e.target.value)} placeholder="Tên người nhận" className="w-full border-2 border-gray-900 p-2.5 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 text-sm" />
                 </div>
                 <div>
-                  <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Số điện thoại</label>
-                  <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Số điện thoại liên hệ" className="w-full border-2 border-gray-900 p-3 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100" />
+                  <label className="block font-bold text-gray-900 text-xs mb-1 uppercase">Số điện thoại</label>
+                  <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Số điện thoại liên hệ" className="w-full border-2 border-gray-900 p-2.5 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 text-sm" />
                 </div>
                 <div>
-                  <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Tỉnh / Thành phố</label>
-                  <select required value={province} onChange={e => setProvince(e.target.value)} className="w-full border-2 border-gray-900 p-3 font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 appearance-none cursor-pointer">
+                  <label className="block font-bold text-gray-900 text-xs mb-1 uppercase">Tỉnh / Thành phố</label>
+                  <select required value={province} onChange={e => setProvince(e.target.value)} className="w-full border-2 border-gray-900 p-2.5 font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 appearance-none cursor-pointer text-sm">
                     <option value="" disabled>-- Chọn Tỉnh / Thành phố --</option>
                     {PROVINCES.map(p => (
                       <option key={p} value={p}>{p}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Địa chỉ cụ thể</label>
-                  <textarea required value={address} onChange={e => setAddress(e.target.value)} placeholder="Số nhà, đường, phường/xã, quận/huyện..." className="w-full border-2 border-gray-900 p-3 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 h-24 resize-none" />
+                <div className="flex-1">
+                  <label className="block font-bold text-gray-900 text-xs mb-1 uppercase">Địa chỉ cụ thể</label>
+                  <textarea required value={address} onChange={e => setAddress(e.target.value)} placeholder="Số nhà, đường, phường/xã, quận/huyện..." className="w-full border-2 border-gray-900 p-2.5 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 h-full min-h-[80px] resize-none text-sm" />
                 </div>
 
                 {step === 1 && (
-                  <button type="submit" className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-4 border-2 border-transparent shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:border-gray-900 transition-all mt-4">
+                  <button type="submit" className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-3 border-2 border-transparent shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:border-gray-900 transition-all mt-4 shrink-0 text-sm">
                     Tiếp tục thanh toán &rarr;
                   </button>
                 )}
               </form>
             </div>
+          </div>
 
-            {/* Order Summary */}
-            <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8">
-              <h2 className="text-2xl font-black uppercase tracking-widest mb-6 border-b-4 border-gray-900 pb-4 text-gray-900">Đơn hàng của bạn</h2>
+          {/* Column 2: Order Summary */}
+          <div className="h-full">
+            <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 flex flex-col h-full">
+              <h2 className="text-xl font-black uppercase tracking-widest mb-6 border-b-4 border-gray-900 pb-4 text-gray-900 shrink-0">Đơn hàng của bạn</h2>
               
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
                 {cart.map(item => (
-                  <div key={item.id} className="flex gap-4 p-3 bg-cream-100 border-2 border-gray-900">
-                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover border-2 border-gray-900" />
+                  <div key={item.id} className="flex gap-3 p-2.5 bg-cream-100 border-2 border-gray-900">
+                    <img src={item.image} alt={item.name} className="w-14 h-14 object-cover border-2 border-gray-900" />
                     <div className="flex-1">
-                      <h3 className="font-bold text-sm uppercase line-clamp-1 text-gray-900">{item.name}</h3>
-                      <p className="font-black text-olive-600 mt-1">{item.price}</p>
+                      <h3 className="font-bold text-xs uppercase line-clamp-2 text-gray-900 leading-tight">{item.name}</h3>
+                      <p className="font-black text-olive-600 mt-1 text-sm">{item.price}</p>
                     </div>
                   </div>
                 ))}
               </div>
               
-              <div className="border-t-4 border-gray-900 pt-6 space-y-2">
-                <div className="flex justify-between items-center text-gray-600 font-bold">
+              <div className="border-t-4 border-gray-900 pt-4 space-y-2 shrink-0">
+                <div className="flex justify-between items-center text-gray-600 font-bold text-sm">
                   <span>Tiền hàng:</span>
                   <span>{cartTotal.toLocaleString('vi-VN')}đ</span>
                 </div>
-                <div className="flex justify-between items-center text-gray-600 font-bold">
+                <div className="flex justify-between items-center text-gray-600 font-bold text-sm">
                   <span>Phí vận chuyển:</span>
                   <span>{province ? `${shippingFee.toLocaleString('vi-VN')}đ` : 'Chưa tính'}</span>
                 </div>
-                <div className="flex justify-between items-end pt-4 mt-4 border-t-2 border-dashed border-gray-300">
-                  <span className="font-black uppercase tracking-widest text-lg text-gray-900">Tổng cộng:</span>
-                  <span className="font-black text-4xl text-red-600">
+                <div className="flex justify-between items-end pt-3 mt-3 border-t-2 border-dashed border-gray-300">
+                  <span className="font-black uppercase tracking-widest text-gray-900">Tổng cộng:</span>
+                  <span className="font-black text-2xl md:text-3xl text-red-600">
                     {finalTotal.toLocaleString('vi-VN')}đ
                   </span>
                 </div>
@@ -160,35 +161,35 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Right Column: Payment Section */}
+          {/* Column 3: Payment Section */}
           <div className="h-full">
-            <div className={`bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8 flex flex-col items-center text-center h-full ${step === 1 ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
-              <h2 className="text-2xl font-black uppercase tracking-widest mb-2 text-gray-900">2. Quét Mã Thanh Toán</h2>
+            <div className={`bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 flex flex-col items-center text-center h-full ${step === 1 ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+              <h2 className="text-xl font-black uppercase tracking-widest mb-2 text-gray-900 shrink-0">2. Quét Mã Thanh Toán</h2>
               
               {step === 1 ? (
-                <div className="flex-1 flex flex-col items-center justify-center py-12">
-                  <div className="w-20 h-20 border-4 border-gray-400 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-gray-400 font-black text-2xl">?</span>
+                <div className="flex-1 flex flex-col items-center justify-center py-8">
+                  <div className="w-16 h-16 border-4 border-gray-400 rounded-full flex items-center justify-center mb-3">
+                    <span className="text-gray-400 font-black text-xl">?</span>
                   </div>
-                  <p className="font-bold text-gray-500 uppercase text-sm max-w-[200px]">Vui lòng điền thông tin giao hàng để xem mã QR</p>
+                  <p className="font-bold text-gray-500 uppercase text-xs max-w-[180px]">Vui lòng điền thông tin giao hàng để xem mã QR</p>
                 </div>
               ) : (
                 <>
-                  <p className="font-bold text-gray-900 mb-6 bg-cream-200 px-4 py-1 border-2 border-gray-900">Techcombank • NGUYEN THANH TUNG</p>
+                  <p className="font-bold text-gray-900 mb-4 bg-cream-200 px-3 py-1 border-2 border-gray-900 text-xs shrink-0">Techcombank • NGUYEN THANH TUNG</p>
                   
-                  <div className="w-64 h-64 border-4 border-gray-900 mb-6 p-2 bg-white relative">
+                  <div className="w-48 h-48 sm:w-56 sm:h-56 border-4 border-gray-900 mb-4 p-2 bg-white relative shrink-0">
                     <img src={qrUrl} alt="VietQR Code" className="w-full h-full object-contain" />
-                    <div className="absolute -top-3 -right-3 bg-red-600 text-white font-black px-3 py-1 border-2 border-gray-900 transform rotate-12">
+                    <div className="absolute -top-3 -right-3 bg-red-600 text-white font-black px-2 py-1 border-2 border-gray-900 transform rotate-12 text-[10px]">
                       Đã gộp phí ship!
                     </div>
                   </div>
                   
-                  <div className="w-full space-y-4 mt-auto">
-                    <p className="font-bold text-sm text-gray-600 bg-cream-100 p-3 border-2 border-gray-900">
-                      Nội dung CK: <span className="text-gray-900 font-black">Thanh toan Paos 2hand</span>
+                  <div className="w-full space-y-3 mt-auto">
+                    <p className="font-bold text-xs text-gray-600 bg-cream-100 p-2 border-2 border-gray-900">
+                      Nội dung CK: <span className="text-gray-900 font-black block sm:inline">Thanh toan Paos 2hand</span>
                     </p>
-                    <p className="font-bold text-sm text-gray-600">
-                      Sau khi chuyển khoản thành công, hãy bấm nút bên dưới để gửi tin nhắn thông tin nhận hàng cho shop qua Instagram!
+                    <p className="font-bold text-xs text-gray-600 leading-tight">
+                      Sau khi chuyển khoản, hãy bấm nút bên dưới để gửi tin nhắn thông tin nhận hàng cho shop qua Instagram!
                     </p>
                     
                     <a 
@@ -199,7 +200,7 @@ export default function CheckoutPage() {
                         navigator.clipboard.writeText(decodeURIComponent(igMessage));
                         alert("Đã copy toàn bộ thông tin! Vui lòng mở tin nhắn Instagram và dán (paste) gửi cho shop nhé.");
                       }}
-                      className="block w-full bg-olive-600 text-white font-black uppercase tracking-widest py-4 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 transition-all hover:translate-y-1 hover:shadow-none"
+                      className="block w-full bg-olive-600 text-white font-black uppercase tracking-widest py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 transition-all hover:translate-y-1 hover:shadow-none text-xs"
                     >
                       3. Đã CK - Nhắn tin cho Shop
                     </a>
