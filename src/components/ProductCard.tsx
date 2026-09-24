@@ -48,7 +48,6 @@ export default function ProductCard({
               <motion.img 
                 src={img} 
                 alt={`${name} - ${idx + 1}`} 
-                loading="lazy"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.4 }}
                 className={`object-cover w-full h-full ${isSold ? 'grayscale opacity-70' : ''}`}

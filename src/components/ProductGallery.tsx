@@ -25,7 +25,6 @@ export default function ProductGallery({ images }: ProductGalleryProps) {
             transition={{ duration: 0.3 }}
             className="w-full h-full object-cover"
             alt={`Product image ${currentIndex + 1}`}
-            loading="lazy"
           />
         </AnimatePresence>
         
