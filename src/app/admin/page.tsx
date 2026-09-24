@@ -1,7 +1,7 @@
 import { getAllProducts } from '@/lib/data';
 import AdminClient from './AdminClient';
 
-export const revalidate = 0; // Always fetch fresh data for admin
+export const revalidate = 60;
 
 export default async function AdminPage() {
   const products = await getAllProducts();

@@ -4,7 +4,7 @@ import Hero from '@/components/Hero';
 import { getAllProducts } from '@/lib/data';
 import Link from 'next/link';
 
-export const revalidate = 0; 
+export const revalidate = 60; 
 
 export default async function Home() {
   const allData = await getAllProducts();

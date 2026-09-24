@@ -1,7 +1,7 @@
 import ProductCard from '@/components/ProductCard';
 import { getAllProducts } from '@/lib/data';
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function ProductsPage() {
   const allData = await getAllProducts();
