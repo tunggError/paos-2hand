@@ -1,19 +1,12 @@
 import ProductCard from '@/components/ProductCard';
-import { getInstagramPosts } from '@/lib/instagram';
-import { parseInstagramCaption } from '@/lib/parser';
+import { getAllProducts } from '@/lib/data';
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function ProductsPage() {
-  const posts = await getInstagramPosts(50); // Get more posts for the products page
+  const allData = await getAllProducts();
 
-  const products = posts
-    .filter(p => p.media_type === 'IMAGE' || p.media_type === 'CAROUSEL_ALBUM')
-    .map(post => {
-      const parsed = parseInstagramCaption(post.caption);
-      return { post, parsed };
-    })
-    .filter(item => !item.parsed.isAnnouncement);
+  const products = allData.filter(item => !item.isAnnouncement);
 
   return (
     <div className="bg-cream-100 min-h-screen pt-12 pb-24 px-4">
@@ -33,17 +26,17 @@ export default async function ProductsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map(({ post, parsed }) => (
+            {products.map((item) => (
               <ProductCard 
-                key={post.id}
-                id={post.id}
-                name={parsed.name}
-                condition={parsed.condition}
-                measurements={parsed.measurements}
-                description={parsed.description}
-                price={parsed.price}
-                image={post.media_url}
-                isSold={parsed.isSold}
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                condition={item.condition || "9/10"}
+                measurements={item.measurements || {n: 0, d: 0}}
+                description={item.description || "Hàng 2hand tuyển chọn."}
+                price={item.price}
+                image={item.image}
+                isSold={item.isSold}
               />
             ))}
           </div>

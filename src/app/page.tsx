@@ -1,24 +1,16 @@
 import ProductCard from '@/components/ProductCard';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import Hero from '@/components/Hero';
-import { getInstagramPosts } from '@/lib/instagram';
-import { parseInstagramCaption } from '@/lib/parser';
+import { getAllProducts } from '@/lib/data';
 import Link from 'next/link';
 
-export const revalidate = 3600; // Cache page for 1 hour, auto-rebuild
+export const revalidate = 0; 
 
 export default async function Home() {
-  const posts = await getInstagramPosts(24); // Lấy 24 bài viết mới nhất
-
-  const parsedPosts = posts
-    .filter(p => p.media_type === 'IMAGE' || p.media_type === 'CAROUSEL_ALBUM')
-    .map(post => {
-      const parsed = parseInstagramCaption(post.caption);
-      return { post, parsed };
-    });
-
-  const announcements = parsedPosts.filter(item => item.parsed.isAnnouncement);
-  const products = parsedPosts.filter(item => !item.parsed.isAnnouncement).slice(0, 8); // Chỉ lấy 8 sản phẩm cho trang chủ
+  const allData = await getAllProducts();
+  
+  const announcements = allData.filter(item => item.isAnnouncement);
+  const products = allData.filter(item => !item.isAnnouncement).slice(0, 8); // Chỉ lấy 8 sản phẩm cho trang chủ
 
   return (
     <div className="bg-cream-100 flex-grow">
@@ -33,14 +25,14 @@ export default async function Home() {
                 <p className="text-gray-900 font-bold uppercase tracking-widest bg-olive-600 text-white inline-block px-4 py-1 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)]">Cập nhật lịch release và các bộ sưu tập sắp lên kệ</p>
               </div>
               <div className="flex flex-col gap-8">
-                {announcements.map(({ post, parsed }) => (
+                {announcements.map((item) => (
                   <AnnouncementCard
-                    key={post.id}
-                    id={post.id}
-                    description={parsed.description}
-                    image={post.media_url}
-                    timestamp={post.timestamp}
-                    permalink={post.permalink}
+                    key={item.id}
+                    id={item.id}
+                    description={item.description || item.name}
+                    image={item.image}
+                    timestamp={item.post?.timestamp || new Date().toISOString()}
+                    permalink={item.post?.permalink || "#"}
                   />
                 ))}
               </div>
@@ -67,17 +59,17 @@ export default async function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {products.map(({ post, parsed }) => (
+                {products.map((item) => (
                   <ProductCard 
-                    key={post.id}
-                    id={post.id}
-                    name={parsed.name}
-                    condition={parsed.condition}
-                    measurements={parsed.measurements}
-                    description={parsed.description}
-                    price={parsed.price}
-                    image={post.media_url}
-                    isSold={parsed.isSold}
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    condition={item.condition || "9/10"}
+                    measurements={item.measurements || {n: 0, d: 0}}
+                    description={item.description || "Hàng tuyển chọn"}
+                    price={item.price}
+                    image={item.image}
+                    isSold={item.isSold}
                   />
                 ))}
               </div>
