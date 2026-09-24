@@ -24,7 +24,7 @@ export default async function Home() {
                 <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-2 uppercase tracking-tighter">Bản Tin & Drop Mới</h2>
                 <p className="text-gray-900 font-bold uppercase tracking-widest bg-olive-600 text-white inline-block px-4 py-1 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)]">Cập nhật lịch release và các bộ sưu tập sắp lên kệ</p>
               </div>
-              <div className="flex flex-col gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {announcements.map((item) => (
                   <AnnouncementCard
                     key={item.id}

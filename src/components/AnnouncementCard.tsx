@@ -29,9 +29,9 @@ export default function AnnouncementCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-none overflow-hidden transition-all duration-300 border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] group flex flex-col md:flex-row relative"
+      className="bg-white rounded-none overflow-hidden transition-all duration-300 border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] group flex flex-col relative h-full"
     >
-      <div className="md:w-1/2 relative aspect-square overflow-hidden bg-cream-200 border-b-4 md:border-b-0 md:border-r-4 border-gray-900">
+      <div className="w-full relative aspect-video overflow-hidden bg-cream-200 border-b-4 border-gray-900 shrink-0">
         <motion.img 
           src={image} 
           alt="Announcement" 
@@ -46,12 +46,14 @@ export default function AnnouncementCard({
         </div>
       </div>
       
-      <div className="md:w-1/2 p-6 md:p-10 flex flex-col justify-center">
-        <h3 className="text-3xl font-black text-gray-900 mb-2 uppercase tracking-tighter">Lịch Drop Hàng Tới</h3>
-        <p className="text-olive-700 font-black mb-6 text-sm uppercase tracking-widest bg-cream-200 inline-block px-3 py-1 border-2 border-gray-900 w-fit">{formattedDate}</p>
-        
-        <div className="prose prose-olive mb-8 whitespace-pre-wrap text-gray-800 font-medium">
-          {description}
+      <div className="p-6 md:p-8 flex flex-col justify-between flex-grow bg-white">
+        <div>
+          <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tighter line-clamp-2">Bản Tin Mới</h3>
+          <p className="text-olive-700 font-black mb-4 text-sm uppercase tracking-widest bg-cream-200 inline-block px-3 py-1 border-2 border-gray-900 w-fit">{formattedDate}</p>
+          
+          <div className="prose prose-olive mb-6 whitespace-pre-wrap text-gray-800 font-medium text-sm line-clamp-3">
+            {description}
+          </div>
         </div>
         
         <div className="mt-auto">
