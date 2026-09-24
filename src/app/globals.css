@@ -10,6 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-olive-500: #677353;
+  --color-olive-600: #576246;
+  --color-olive-700: #4B533C;
+  --color-cream-100: #f7f5f0;
+  --color-cream-200: #F2EFE9;
 }
 
 @media (prefers-color-scheme: dark) {
