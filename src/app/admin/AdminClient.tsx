@@ -1,6 +1,5 @@
 "use client";
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Product } from '@/lib/data';
 import { setProductOverride, addManualProduct, deleteManualProduct } from './actions';
 import { motion } from 'framer-motion';
@@ -9,7 +8,13 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [products, setProducts] = useState(initialProducts);
-  
+
+  useEffect(() => {
+    if (localStorage.getItem('adminAuth') === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   // States for Editing
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', isSold: false });
@@ -22,6 +27,7 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     e.preventDefault();
     if (password === 'paos2026') {
       setIsAuthenticated(true);
+      localStorage.setItem('adminAuth', 'true');
     } else {
       alert("Sai mật khẩu!");
     }
