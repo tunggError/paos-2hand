@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   id: string;
@@ -23,6 +24,13 @@ export default function ProductCard({
   price,
   isSold,
 }: ProductCardProps) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    if (isSold) return;
+    addToCart({ id, name, price, image });
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 30 }}
@@ -78,6 +86,7 @@ export default function ProductCard({
             whileHover={!isSold ? { scale: 1.05 } : {}}
             whileTap={!isSold ? { scale: 0.95 } : {}}
             disabled={isSold}
+            onClick={handleAddToCart}
             className={`${isSold ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-400' : 'bg-olive-600 text-white border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-700'} px-5 py-2 text-sm font-black uppercase tracking-wider transition-all flex items-center gap-2`}
           >
             {isSold ? 'Đã hết' : (

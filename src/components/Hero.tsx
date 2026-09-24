@@ -61,7 +61,7 @@ export default function Hero() {
               whileTap={{ scale: 0.95 }}
               className="inline-block bg-olive-600 text-white font-black text-lg px-12 py-4 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] border-4 border-gray-900 hover:bg-olive-500 transition-all uppercase tracking-widest"
             >
-              Cop Now
+              Shop Now
             </motion.a>
           </motion.div>
         </div>
