@@ -29,20 +29,20 @@ export async function getInstagramPosts(limit = 100): Promise<InstagramPost[]> {
     let url: string | null = `https://graph.facebook.com/v19.0/${IG_USER_ID}/media?fields=id,caption,media_type,media_url,permalink,timestamp,children%7Bmedia_url,media_type%7D&limit=${limit}&access_token=${IG_ACCESS_TOKEN}&bust=1`;
     
     while (url && allPosts.length < 500) {
-      const response = await fetch(url, { cache: 'no-store' }); 
+      const res: Response = await fetch(url, { cache: 'no-store' }); 
       
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!res.ok) {
+        const errorData: any = await res.json();
         console.error("Instagram API Error:", errorData);
         break;
       }
       
-      const data = await response.json();
-      if (data.data) {
-        allPosts = [...allPosts, ...data.data];
+      const responseData: any = await res.json();
+      if (responseData.data) {
+        allPosts = [...allPosts, ...responseData.data];
       }
       
-      url = data.paging?.next || null;
+      url = responseData.paging?.next || null;
     }
 
     return allPosts;
