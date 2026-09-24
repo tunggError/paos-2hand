@@ -44,7 +44,7 @@ export default function ProductCard({
       <Link href={`/product/${id}`} className="relative aspect-[4/5] w-full overflow-hidden bg-cream-100 block border-b-4 border-gray-900">
         <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
           {(images && images.length > 0 ? images : [image]).map((img, idx) => (
-            <div key={idx} className="min-w-full h-full flex-shrink-0 snap-center relative">
+            <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
               <motion.img 
                 src={img} 
                 alt={`${name} - ${idx + 1}`} 

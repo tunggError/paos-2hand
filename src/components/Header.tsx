@@ -2,9 +2,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { useState } from 'react';
 
 export default function Header() {
   const { cart, setIsCartOpen } = useCart();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b-4 border-gray-900 bg-cream-100">
@@ -38,8 +40,27 @@ export default function Header() {
               {cart.length}
             </span>
           </button>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 text-gray-900 bg-white border-2 border-gray-900 shadow-[2px_2px_0px_0px_rgba(17,24,39,1)] focus:outline-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </div>
+      
+      {/* Mobile Menu Dropdown */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 w-full bg-cream-100 border-b-4 border-gray-900 flex flex-col font-black text-lg uppercase tracking-widest p-4 gap-4 z-40">
+          <Link href="/" onClick={() => setIsMenuOpen(false)} className="text-gray-900 border-b-2 border-gray-900 pb-2">Trang chủ</Link>
+          <Link href="/products" onClick={() => setIsMenuOpen(false)} className="text-gray-900 border-b-2 border-gray-900 pb-2">Sản phẩm</Link>
+          <Link href="/about" onClick={() => setIsMenuOpen(false)} className="text-gray-900 pb-2">Về chúng tôi</Link>
+        </div>
+      )}
     </header>
   );
 }
