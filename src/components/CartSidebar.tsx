@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
 export default function CartSidebar() {
-  const { cart, isCartOpen, setIsCartOpen, cartTotal, removeFromCart } = useCart();
+  const { cart, isCartOpen, setIsCartOpen, cartTotal, removeFromCart, pendingOrder } = useCart();
 
   return (
     <AnimatePresence>
@@ -52,14 +52,16 @@ export default function CartSidebar() {
                       <h3 className="font-bold text-sm uppercase line-clamp-2 leading-tight mb-2 text-gray-900">{item.name}</h3>
                       <p className="font-black text-olive-600">{item.price}</p>
                     </div>
-                    <button 
-                      onClick={() => removeFromCart(item.id)}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-red-600"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
-                        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-                      </svg>
-                    </button>
+                    {!pendingOrder && (
+                      <button 
+                        onClick={() => removeFromCart(item.id)}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-600"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+                          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ))
               )}
@@ -67,17 +69,24 @@ export default function CartSidebar() {
 
             {cart.length > 0 && (
               <div className="p-6 bg-white border-t-4 border-gray-900">
-                <div className="flex justify-between items-center mb-6 text-gray-900">
-                  <span className="font-black uppercase tracking-wider">Tổng cộng:</span>
-                  <span className="font-black text-2xl">{cartTotal.toLocaleString('vi-VN')}đ</span>
-                </div>
+                {pendingOrder ? (
+                  <div className="mb-6 bg-orange-100 border-2 border-orange-500 p-3 text-center">
+                    <p className="font-bold text-orange-600 text-xs uppercase mb-1">Đơn hàng đang chờ thanh toán!</p>
+                    <p className="font-black text-orange-700 text-lg">{pendingOrder.total.toLocaleString('vi-VN')}đ</p>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center mb-6 text-gray-900">
+                    <span className="font-black uppercase tracking-wider">Tổng cộng:</span>
+                    <span className="font-black text-2xl">{cartTotal.toLocaleString('vi-VN')}đ</span>
+                  </div>
+                )}
                 
                 <Link 
                   href="/checkout"
                   onClick={() => setIsCartOpen(false)}
-                  className="block w-full text-center bg-olive-600 text-white font-black uppercase tracking-widest py-4 border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 hover:text-white transition-all hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_rgba(17,24,39,1)]"
+                  className={`block w-full text-center text-white font-black uppercase tracking-widest py-4 border-4 border-gray-900 shadow-[6px_6px_0px_0px_rgba(17,24,39,1)] transition-all hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_rgba(17,24,39,1)] ${pendingOrder ? 'bg-orange-600 hover:bg-gray-900' : 'bg-olive-600 hover:bg-gray-900'}`}
                 >
-                  Thanh Toán Ngay
+                  {pendingOrder ? 'Xem QR & TT Nốt' : 'Thanh Toán Ngay'}
                 </Link>
               </div>
             )}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const PROVINCES = [
   "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", 
@@ -22,7 +23,8 @@ const PROVINCES = [
 ];
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal, clearCart, pendingOrder, setPendingOrder, clearPendingOrder } = useCart();
+  const router = useRouter();
   
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState('');
@@ -36,6 +38,14 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState<string>('');
 
   useEffect(() => {
+    if (pendingOrder) {
+      setStep(2);
+      setOrderId(pendingOrder.orderId);
+      setLockExpireTime(pendingOrder.expireTime);
+    }
+  }, [pendingOrder]);
+
+  useEffect(() => {
     if (step === 2 && lockExpireTime) {
       const interval = setInterval(() => {
         const remaining = lockExpireTime - Date.now();
@@ -43,6 +53,7 @@ export default function CheckoutPage() {
           clearInterval(interval);
           alert("Hết thời gian giữ hàng (15 phút). Giỏ hàng của bạn đã bị hủy.");
           clearCart();
+          clearPendingOrder();
           window.location.href = '/';
         } else {
           setLockTimeLeft(Math.floor(remaining / 1000));
@@ -50,7 +61,7 @@ export default function CheckoutPage() {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [step, lockExpireTime, clearCart]);
+  }, [step, lockExpireTime, clearCart, clearPendingOrder]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -59,13 +70,13 @@ export default function CheckoutPage() {
   };
 
   const shippingFee = province === 'Hà Nội' ? 25000 : (province ? 35000 : 0);
-  const finalTotal = cartTotal + shippingFee;
+  const finalTotal = pendingOrder ? pendingOrder.total : cartTotal + shippingFee;
 
   // Create VietQR URL using orderId
   const qrUrl = `https://img.vietqr.io/image/TCB-2107999999999-compact2.png?amount=${finalTotal}&addInfo=${orderId}&accountName=NGUYEN%20THANH%20TUNG`;
 
   // Create Instagram pre-filled message
-  const igMessage = encodeURIComponent(
+  const igMessage = pendingOrder ? pendingOrder.igMessage : encodeURIComponent(
     `Chào shop, mình đã CK đơn hàng: ${orderId}\n\n` +
     `Người nhận: ${name}\nSĐT: ${phone}\nĐịa chỉ: ${address}, ${province}\n\n` +
     `Sản phẩm:\n${cart.map((item, i) => `${i + 1}. ${item.name} (${item.price})`).join('\n')}\n\n` +
@@ -119,7 +130,15 @@ export default function CheckoutPage() {
       
       setOrderId(data.orderId);
       setLockExpireTime(data.expireTime);
+      setPendingOrder({
+        orderId: data.orderId,
+        expireTime: data.expireTime,
+        total: finalTotal,
+        shippingFee: shippingFee,
+        igMessage: igMessage
+      });
       setStep(2);
+      router.refresh(); // Force client cache to update so homepage shows TẠM GIỮ instantly
     } catch (err) {
       alert("Lỗi kết nối. Vui lòng thử lại.");
     } finally {
@@ -201,7 +220,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between items-center text-gray-600 font-bold text-sm">
                   <span>Phí vận chuyển:</span>
-                  <span>{province ? `${shippingFee.toLocaleString('vi-VN')}đ` : 'Chưa tính'}</span>
+                  <span>{(pendingOrder ? pendingOrder.shippingFee : shippingFee) > 0 ? `${(pendingOrder ? pendingOrder.shippingFee : shippingFee).toLocaleString('vi-VN')}đ` : 'Chưa tính'}</span>
                 </div>
                 <div className="flex justify-between items-end pt-3 mt-3 border-t-2 border-dashed border-gray-300">
                   <span className="font-black uppercase tracking-widest text-gray-900">Tổng cộng:</span>
@@ -253,7 +272,8 @@ export default function CheckoutPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => {
-                        navigator.clipboard.writeText(decodeURIComponent(igMessage));
+                        const messageToCopy = pendingOrder ? pendingOrder.igMessage : igMessage;
+                        navigator.clipboard.writeText(decodeURIComponent(messageToCopy));
                         alert("Đã copy toàn bộ thông tin! Vui lòng mở tin nhắn Instagram và dán (paste) gửi cho shop nhé.");
                       }}
                       className="block w-full bg-olive-600 text-white font-black uppercase tracking-widest py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 transition-all hover:translate-y-1 hover:shadow-none text-xs"
