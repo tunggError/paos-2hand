@@ -5,6 +5,22 @@ import { useCart } from '@/context/CartContext';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
+const PROVINCES = [
+  "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", 
+  "Bắc Ninh", "Bến Tre", "Bình Định", "Bình Dương", "Bình Phước", 
+  "Bình Thuận", "Cà Mau", "Cao Bằng", "Cần Thơ", "Đà Nẵng", 
+  "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", 
+  "Gia Lai", "Hà Giang", "Hà Nam", "Hà Nội", "Hà Tĩnh", 
+  "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", 
+  "Khánh Hòa", "Kiên Giang", "Kon Tum", "Lai Châu", "Lâm Đồng", 
+  "Lạng Sơn", "Lào Cai", "Long An", "Nam Định", "Nghệ An", 
+  "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Quảng Bình", 
+  "Quảng Nam", "Quảng Ngãi", "Quảng Ninh", "Quảng Trị", "Sóc Trăng", 
+  "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", 
+  "Thừa Thiên Huế", "Tiền Giang", "TP. Hồ Chí Minh", "Trà Vinh", "Tuyên Quang", 
+  "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"
+];
+
 export default function CheckoutPage() {
   const { cart, cartTotal } = useCart();
   
@@ -12,9 +28,9 @@ export default function CheckoutPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [region, setRegion] = useState<'HN' | 'OTHER' | ''>('');
+  const [province, setProvince] = useState('');
 
-  const shippingFee = region === 'HN' ? 25000 : (region === 'OTHER' ? 35000 : 0);
+  const shippingFee = province === 'Hà Nội' ? 25000 : (province ? 35000 : 0);
   const finalTotal = cartTotal + shippingFee;
 
   // Create VietQR URL
@@ -23,7 +39,7 @@ export default function CheckoutPage() {
   // Create Instagram pre-filled message
   const igMessage = encodeURIComponent(
     `Chào shop, mình chốt đơn qua Web:\n\n` +
-    `Người nhận: ${name}\nSĐT: ${phone}\nĐịa chỉ: ${address} (${region === 'HN' ? 'Nội thành HN' : 'Tỉnh khác'})\n\n` +
+    `Người nhận: ${name}\nSĐT: ${phone}\nĐịa chỉ: ${address}, ${province}\n\n` +
     `Sản phẩm:\n${cart.map((item, i) => `${i + 1}. ${item.name} (${item.price})`).join('\n')}\n\n` +
     `Tiền hàng: ${cartTotal.toLocaleString('vi-VN')}đ\n` +
     `Phí ship: ${shippingFee.toLocaleString('vi-VN')}đ\n` +
@@ -52,7 +68,7 @@ export default function CheckoutPage() {
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone || !address || !region) {
+    if (!name || !phone || !address || !province) {
       alert("Vui lòng điền đầy đủ thông tin giao hàng!");
       return;
     }
@@ -88,17 +104,13 @@ export default function CheckoutPage() {
                   <input required type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="Số điện thoại liên hệ" className="w-full border-2 border-gray-900 p-3 font-bold text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Khu vực giao hàng</label>
-                  <div className="flex gap-4">
-                    <label className={`flex-1 border-2 border-gray-900 p-3 flex justify-center items-center gap-2 cursor-pointer transition-colors font-bold uppercase text-sm ${region === 'HN' ? 'bg-olive-600 text-white' : 'bg-cream-100 text-gray-900 hover:bg-cream-200'}`}>
-                      <input type="radio" name="region" value="HN" checked={region === 'HN'} onChange={() => setRegion('HN')} className="hidden" />
-                      Hà Nội (25K)
-                    </label>
-                    <label className={`flex-1 border-2 border-gray-900 p-3 flex justify-center items-center gap-2 cursor-pointer transition-colors font-bold uppercase text-sm ${region === 'OTHER' ? 'bg-olive-600 text-white' : 'bg-cream-100 text-gray-900 hover:bg-cream-200'}`}>
-                      <input type="radio" name="region" value="OTHER" checked={region === 'OTHER'} onChange={() => setRegion('OTHER')} className="hidden" />
-                      Tỉnh khác (35K)
-                    </label>
-                  </div>
+                  <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Tỉnh / Thành phố</label>
+                  <select required value={province} onChange={e => setProvince(e.target.value)} className="w-full border-2 border-gray-900 p-3 font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-olive-600 bg-cream-100 appearance-none cursor-pointer">
+                    <option value="" disabled>-- Chọn Tỉnh / Thành phố --</option>
+                    {PROVINCES.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block font-bold text-gray-900 text-sm mb-1 uppercase">Địa chỉ cụ thể</label>
@@ -136,7 +148,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between items-center text-gray-600 font-bold">
                   <span>Phí vận chuyển:</span>
-                  <span>{region ? `${shippingFee.toLocaleString('vi-VN')}đ` : 'Chưa tính'}</span>
+                  <span>{province ? `${shippingFee.toLocaleString('vi-VN')}đ` : 'Chưa tính'}</span>
                 </div>
                 <div className="flex justify-between items-end pt-4 mt-4 border-t-2 border-dashed border-gray-300">
                   <span className="font-black uppercase tracking-widest text-lg text-gray-900">Tổng cộng:</span>
