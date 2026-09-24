@@ -16,7 +16,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  const { name, condition, measurements, description, price, isSold, image, images, post } = product;
+  const { name, condition, measurements, description, price, isSold, isLocked, image, images, post } = product;
   const displayImages = images && images.length > 0 ? images : [image];
   const permalink = post?.permalink || '#';
 
@@ -47,6 +47,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                   Đã Bán
                 </span>
               )}
+              {!isSold && isLocked && (
+                <span className="bg-orange-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-sm uppercase tracking-wider">
+                  Tạm Giữ
+                </span>
+              )}
               <span className="bg-olive-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-sm">
                 Độ mới: {condition}
               </span>
@@ -70,6 +75,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               {isSold ? (
                 <div className="w-full bg-gray-300 text-gray-600 text-center py-4 rounded-xl font-bold text-lg cursor-not-allowed uppercase tracking-widest shadow-inner">
                   Sản phẩm đã hết hàng
+                </div>
+              ) : isLocked ? (
+                <div className="w-full bg-orange-200 text-orange-800 text-center py-4 rounded-xl font-bold text-lg cursor-not-allowed uppercase tracking-widest shadow-inner">
+                  Sản phẩm đang được người khác giữ
                 </div>
               ) : (
                 <a 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -22,13 +22,40 @@ const PROVINCES = [
 ];
 
 export default function CheckoutPage() {
-  const { cart, cartTotal } = useCart();
+  const { cart, cartTotal, clearCart } = useCart();
   
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [province, setProvince] = useState('');
+  
+  const [isLocking, setIsLocking] = useState(false);
+  const [lockExpireTime, setLockExpireTime] = useState<number | null>(null);
+  const [lockTimeLeft, setLockTimeLeft] = useState<number>(900); // 15 mins default
+
+  useEffect(() => {
+    if (step === 2 && lockExpireTime) {
+      const interval = setInterval(() => {
+        const remaining = lockExpireTime - Date.now();
+        if (remaining <= 0) {
+          clearInterval(interval);
+          alert("Hết thời gian giữ hàng (15 phút). Giỏ hàng của bạn đã bị hủy.");
+          clearCart();
+          window.location.href = '/';
+        } else {
+          setLockTimeLeft(Math.floor(remaining / 1000));
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [step, lockExpireTime, clearCart]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   const shippingFee = province === 'Hà Nội' ? 25000 : (province ? 35000 : 0);
   const finalTotal = cartTotal + shippingFee;
@@ -66,13 +93,34 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleContinue = (e: React.FormEvent) => {
+  const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone || !address || !province) {
       alert("Vui lòng điền đầy đủ thông tin giao hàng!");
       return;
     }
-    setStep(2);
+
+    setIsLocking(true);
+    try {
+      const res = await fetch('/api/lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: cart.map(item => item.id) })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        alert(data.error || "Có lỗi xảy ra, một số sản phẩm đã bị người khác giữ trước.");
+        return;
+      }
+      
+      setLockExpireTime(data.expireTime);
+      setStep(2);
+    } catch (err) {
+      alert("Lỗi kết nối. Vui lòng thử lại.");
+    } finally {
+      setIsLocking(false);
+    }
   };
 
   return (
@@ -117,8 +165,8 @@ export default function CheckoutPage() {
                 </div>
 
                 {step === 1 && (
-                  <button type="submit" className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-3 border-2 border-transparent shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:border-gray-900 transition-all mt-4 shrink-0 text-sm">
-                    Tiếp tục thanh toán &rarr;
+                  <button type="submit" disabled={isLocking} className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-3 border-2 border-transparent shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-600 hover:border-gray-900 transition-all mt-4 shrink-0 text-sm disabled:opacity-50">
+                    {isLocking ? 'Đang xử lý...' : 'Tiếp tục thanh toán \u2192'}
                   </button>
                 )}
               </form>
@@ -175,6 +223,10 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <>
+                  <div className="w-full bg-orange-100 border-2 border-orange-500 p-2 mb-4 shrink-0">
+                    <p className="font-bold text-orange-600 text-xs uppercase">Sản phẩm đang được tạm giữ trong:</p>
+                    <p className="font-black text-orange-700 text-2xl tracking-widest">{formatTime(lockTimeLeft)}</p>
+                  </div>
                   <p className="font-bold text-gray-900 mb-4 bg-cream-200 px-3 py-1 border-2 border-gray-900 text-xs shrink-0">Techcombank • NGUYEN THANH TUNG</p>
                   
                   <div className="w-48 h-48 sm:w-56 sm:h-56 border-4 border-gray-900 mb-4 p-2 bg-white relative shrink-0">

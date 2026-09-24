@@ -13,6 +13,7 @@ interface ProductCardProps {
   description: string;
   price: string;
   isSold: boolean;
+  isLocked?: boolean;
   permalink?: string;
 }
 
@@ -26,6 +27,7 @@ export default function ProductCard({
   description,
   price,
   isSold,
+  isLocked,
   permalink,
 }: ProductCardProps) {
   const { addToCart } = useCart();
@@ -33,7 +35,7 @@ export default function ProductCard({
   const isContactOnly = price.toLowerCase().includes('liên hệ');
 
   const handleAddToCart = () => {
-    if (isSold) return;
+    if (isSold || isLocked) return;
     addToCart({ id, name, price, image });
   };
 
@@ -51,7 +53,7 @@ export default function ProductCard({
           alt={name} 
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.4 }}
-          className={`object-cover w-full h-full ${isSold ? 'grayscale opacity-70' : ''}`}
+          className={`object-cover w-full h-full ${(isSold || isLocked) ? 'grayscale opacity-70' : ''}`}
         />
         {/* Optional: Indicator that it has multiple images */}
         {images && images.length > 1 && (
@@ -64,6 +66,13 @@ export default function ProductCard({
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
             <span className="bg-red-600 text-white font-black px-6 py-2 rounded-full text-lg uppercase tracking-widest shadow-lg transform -rotate-12">
               Đã Bán
+            </span>
+          </div>
+        )}
+        {!isSold && isLocked && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+            <span className="bg-orange-500 text-white font-black px-6 py-2 rounded-full text-lg uppercase tracking-widest shadow-lg transform -rotate-12">
+              Tạm Giữ
             </span>
           </div>
         )}
@@ -94,7 +103,7 @@ export default function ProductCard({
         </div>
         
         <div className="mt-auto flex items-center justify-between pt-4 border-t-4 border-gray-900">
-          <span className={`font-black text-2xl tracking-tighter ${isSold ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{price}</span>
+          <span className={`font-black text-2xl tracking-tighter ${(isSold || isLocked) ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{price}</span>
           
           {isContactOnly ? (
             <a 
@@ -108,13 +117,13 @@ export default function ProductCard({
             </a>
           ) : (
             <motion.button 
-              whileHover={!isSold ? { scale: 1.05 } : {}}
-              whileTap={!isSold ? { scale: 0.95 } : {}}
-              disabled={isSold}
+              whileHover={!(isSold || isLocked) ? { scale: 1.05 } : {}}
+              whileTap={!(isSold || isLocked) ? { scale: 0.95 } : {}}
+              disabled={isSold || isLocked}
               onClick={handleAddToCart}
-              className={`${isSold ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-400' : 'bg-olive-600 text-white border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-700'} px-5 py-2 text-sm font-black uppercase tracking-wider transition-all flex items-center gap-2`}
+              className={`${(isSold || isLocked) ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-400' : 'bg-olive-600 text-white border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-olive-700'} px-5 py-2 text-sm font-black uppercase tracking-wider transition-all flex items-center gap-2`}
             >
-              {isSold ? 'Đã hết' : (
+              {isSold ? 'Đã hết' : isLocked ? 'Tạm giữ' : (
                 <>
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
                     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>

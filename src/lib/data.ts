@@ -9,6 +9,7 @@ export type Product = {
   image: string;
   isSold: boolean;
   isAnnouncement: boolean;
+  isLocked?: boolean;
   isManual?: boolean;
   condition?: string;
   measurements?: { n: number; d: number };
@@ -25,8 +26,13 @@ export async function getAllProducts(): Promise<Product[]> {
     // 2. Fetch Redis overrides and manual products
     let overrides: Record<string, string> = {};
     let manualProducts: Product[] = [];
+    let lockedProducts: string[] = [];
     
     if (redis) {
+      const now = Date.now();
+      await redis.zremrangebyscore('locked_products', '-inf', now); // Clean up expired locks
+      lockedProducts = await redis.zrangebyscore('locked_products', now, '+inf');
+
       overrides = await redis.hgetall('product_overrides') || {};
       const manuals = await redis.lrange('manual_products', 0, -1);
       manualProducts = manuals.map(m => {
@@ -35,6 +41,7 @@ export async function getAllProducts(): Promise<Product[]> {
           ...parsed,
           isManual: true,
           isAnnouncement: false, // Manual products are always products
+          isLocked: lockedProducts.includes(parsed.id),
         };
       });
     }
@@ -66,6 +73,7 @@ export async function getAllProducts(): Promise<Product[]> {
         image: post.media_url,
         images: images,
         isSold: override.isSold !== undefined ? override.isSold : defaultIsSold,
+        isLocked: lockedProducts.includes(id),
         isAnnouncement: defaultIsAnnouncement,
         condition: parsed.condition,
         measurements: parsed.measurements,
