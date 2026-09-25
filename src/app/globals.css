@@ -1,31 +1,101 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-olive-500: #677353;
-  --color-olive-600: #576246;
-  --color-olive-700: #4B533C;
-  --color-cream-100: #f7f5f0;
-  --color-cream-200: #F2EFE9;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: #059669;
+  --color-on-primary: #000000;
+  --color-secondary: #10B981;
+  --color-on-secondary: #0F172A;
+  --color-accent: #EA580C;
+  --color-on-accent: #000000;
+  --color-background: #ECFDF5;
+  --color-foreground: #064E3B;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #064E3B;
+  --color-muted: #E8F1F3;
+  --color-muted-foreground: #475569;
+  --color-border: #A7F3D0;
+  --color-destructive: #DC2626;
+  --color-on-destructive: #FFFFFF;
+  --color-ring: #059669;
+  
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  
+  --shadow-sm: 4px 4px 0px 0px rgba(6, 78, 59, 1);
+  --shadow-md: 6px 6px 0px 0px rgba(6, 78, 59, 1);
+  --shadow-lg: 8px 8px 0px 0px rgba(6, 78, 59, 1);
+  --shadow-xl: 12px 12px 0px 0px rgba(6, 78, 59, 1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Brutalism Component Specs */
+
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  padding: 12px 24px;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  border: 4px solid var(--color-foreground);
+  box-shadow: var(--shadow-sm);
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px rgba(6, 78, 59, 1);
+}
+
+.btn-secondary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  padding: 12px 24px;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  border: 4px solid var(--color-foreground);
+  box-shadow: var(--shadow-sm);
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px rgba(6, 78, 59, 1);
+}
+
+.card {
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  border: 4px solid var(--color-foreground);
+  box-shadow: var(--shadow-md);
+  transition: all 150ms ease;
+}
+
+.card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.input {
+  padding: 12px 16px;
+  border: 4px solid var(--color-foreground);
+  font-family: var(--font-body);
+  font-weight: 700;
+  transition: all 150ms ease;
+  box-shadow: inset 4px 4px 0px 0px rgba(6, 78, 59, 0.05);
+}
+
+.input:focus {
+  outline: none;
+  background: var(--color-background);
 }
