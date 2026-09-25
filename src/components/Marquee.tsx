@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 export default function Marquee() {
-  const text = "🚨 PAO'S 2HAND ORIGINAL STREETWEAR 🚨 NEW DROP EVERY WEEK 🚨 100% AUTHENTIC 🚨 ";
+  const text = "🚨 PAO'S 2HAND ORIGINAL STREETWEAR 🚨 NEW DROP EVERY WEEK 🚨 ";
   
   return (
     <div className="bg-gray-900 text-cream-100 py-3 overflow-hidden whitespace-nowrap border-y-4 border-black relative flex items-center">
