@@ -26,7 +26,7 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 1.3, type: "spring" }}
             className="mb-4 inline-block bg-gray-900 text-cream-100 font-black px-6 py-2 uppercase tracking-widest text-sm shadow-[4px_4px_0px_0px_rgba(101,114,64,1)] border-2 border-gray-900"
           >
-            Est. 2024
+            Est. 2026
           </motion.div>
 
           <motion.h1 
