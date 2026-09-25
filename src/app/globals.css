@@ -1,38 +1,38 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #059669;
-  --color-on-primary: #000000;
-  --color-secondary: #10B981;
-  --color-on-secondary: #0F172A;
-  --color-accent: #EA580C;
-  --color-on-accent: #000000;
-  --color-background: #ECFDF5;
-  --color-foreground: #064E3B;
-  --color-card: #FFFFFF;
-  --color-card-foreground: #064E3B;
-  --color-muted: #E8F1F3;
-  --color-muted-foreground: #475569;
-  --color-border: #A7F3D0;
-  --color-destructive: #DC2626;
+  --color-primary: #576246; /* Muted Olive (Logo) */
+  --color-on-primary: #F7F5F0;
+  --color-secondary: #4B533C; /* Darker Olive */
+  --color-on-secondary: #F7F5F0;
+  --color-accent: #8B5A2B; /* Vintage Leather Brown/Orange */
+  --color-on-accent: #F7F5F0;
+  --color-background: #F7F5F0; /* Warm Cream */
+  --color-foreground: #2B2D26; /* Dark Olive/Gray text */
+  --color-card: #EFEBE0; /* Slightly darker cream */
+  --color-card-foreground: #2B2D26;
+  --color-muted: #E4DECF;
+  --color-muted-foreground: #5C6152;
+  --color-border: #D3CBB3;
+  --color-destructive: #9C3838; /* Muted red */
   --color-on-destructive: #FFFFFF;
-  --color-ring: #059669;
+  --color-ring: #576246;
   
   /* Backward Compatibility Aliases for Old Classes */
   --color-olive-600: var(--color-primary);
-  --color-olive-700: var(--color-foreground);
+  --color-olive-700: var(--color-secondary);
   --color-cream-100: var(--color-background);
-  --color-cream-200: var(--color-muted);
+  --color-cream-200: var(--color-card);
   --color-gray-900: var(--color-foreground);
   
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   --font-sans: var(--font-body);
   
-  --shadow-sm: 4px 4px 0px 0px rgba(6, 78, 59, 1);
-  --shadow-md: 6px 6px 0px 0px rgba(6, 78, 59, 1);
-  --shadow-lg: 8px 8px 0px 0px rgba(6, 78, 59, 1);
-  --shadow-xl: 12px 12px 0px 0px rgba(6, 78, 59, 1);
+  --shadow-sm: 4px 4px 0px 0px rgba(43, 45, 38, 1);
+  --shadow-md: 6px 6px 0px 0px rgba(43, 45, 38, 1);
+  --shadow-lg: 8px 8px 0px 0px rgba(43, 45, 38, 1);
+  --shadow-xl: 12px 12px 0px 0px rgba(43, 45, 38, 1);
 }
 
 body {
@@ -61,7 +61,7 @@ h1, h2, h3, h4, h5, h6, .font-black, .font-bold {
 
 .btn-primary:hover {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px 0px rgba(6, 78, 59, 1);
+  box-shadow: 2px 2px 0px 0px rgba(43, 45, 38, 1);
 }
 
 .btn-secondary {
@@ -78,7 +78,7 @@ h1, h2, h3, h4, h5, h6, .font-black, .font-bold {
 
 .btn-secondary:hover {
   transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px 0px rgba(6, 78, 59, 1);
+  box-shadow: 2px 2px 0px 0px rgba(43, 45, 38, 1);
 }
 
 .card {
@@ -100,7 +100,7 @@ h1, h2, h3, h4, h5, h6, .font-black, .font-bold {
   font-family: var(--font-body);
   font-weight: 700;
   transition: all 150ms ease;
-  box-shadow: inset 4px 4px 0px 0px rgba(6, 78, 59, 0.05);
+  box-shadow: inset 4px 4px 0px 0px rgba(43, 45, 38, 0.05);
 }
 
 .input:focus {
