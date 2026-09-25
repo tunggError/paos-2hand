@@ -8,7 +8,7 @@ import SplashScreen from "./SplashScreen";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith('/admin');
+  const isAdmin = pathname?.startsWith('/paosadmin217');
 
   if (isAdmin) {
     return (
