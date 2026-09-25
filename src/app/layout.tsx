@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Archivo_Black, Space_Grotesk } from "next/font/google";
+import { Outfit, Manrope } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { CartProvider } from "@/context/CartContext";
 
-const archivoBlack = Archivo_Black({
-  weight: "400",
+const outfitFont = Outfit({
   variable: "--font-heading",
   subsets: ["latin"],
 });
 
-const spaceGrotesk = Space_Grotesk({
+const manropeFont = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
 });
@@ -28,7 +27,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${archivoBlack.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${outfitFont.variable} ${manropeFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
         <CartProvider>
