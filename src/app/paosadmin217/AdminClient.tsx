@@ -1,19 +1,19 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { Product } from '@/lib/data';
-import { setProductOverride, addManualProduct, deleteManualProduct } from './actions';
+import { setProductOverride, addManualProduct, deleteManualProduct, loginAction } from './actions';
 import { motion } from 'framer-motion';
 
-export default function AdminClient({ initialProducts }: { initialProducts: Product[] }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export default function AdminClient({ initialProducts, serverAuthenticated }: { initialProducts: Product[], serverAuthenticated: boolean }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(serverAuthenticated);
   const [password, setPassword] = useState('');
   const [products, setProducts] = useState(initialProducts);
 
   useEffect(() => {
-    if (localStorage.getItem('adminAuth') === 'true') {
+    if (serverAuthenticated) {
       setIsAuthenticated(true);
     }
-  }, []);
+  }, [serverAuthenticated]);
 
   // States for Editing
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -188,11 +188,11 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     setDraggedIndex(null);
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'paos2026') {
+    const res = await loginAction(password);
+    if (res.success) {
       setIsAuthenticated(true);
-      localStorage.setItem('adminAuth', 'true');
     } else {
       showAlert('❌ Sai mật khẩu!');
     }

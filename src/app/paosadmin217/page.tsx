@@ -1,10 +1,13 @@
 import { getAllProducts } from '@/lib/data';
 import AdminClient from './AdminClient';
+import { cookies } from 'next/headers';
 
 export const revalidate = 60;
 
 export default async function AdminPage() {
   const products = await getAllProducts();
+  const cookieStore = await cookies();
+  const isAuthenticated = cookieStore.get('paos_admin_session')?.value === 'authenticated';
 
   return (
     <div className="min-h-screen bg-cream-100 p-4 md:p-8">
@@ -13,7 +16,7 @@ export default async function AdminPage() {
           PAOS.2HAND ADMIN
         </h1>
         
-        <AdminClient initialProducts={products} />
+        <AdminClient initialProducts={products} serverAuthenticated={isAuthenticated} />
       </div>
     </div>
   );

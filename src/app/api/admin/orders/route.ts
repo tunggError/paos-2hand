@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
+import { cookies } from 'next/headers';
 
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    if (cookieStore.get('paos_admin_session')?.value !== 'authenticated') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     if (!redis) {
       return NextResponse.json({ error: 'Redis not configured' }, { status: 500 });
     }
@@ -30,6 +36,11 @@ import { revalidatePath } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
+    const cookieStore = await cookies();
+    if (cookieStore.get('paos_admin_session')?.value !== 'authenticated') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     if (!redis) {
       return NextResponse.json({ error: 'Redis not configured' }, { status: 500 });
     }
