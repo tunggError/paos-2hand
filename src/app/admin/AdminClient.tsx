@@ -52,8 +52,13 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
     }
   }, [activeTab]);
 
-  const handleUpdateOrderStatus = async (orderId: string, action: 'PAID' | 'CANCELLED') => {
-    const message = `Bạn chắc chắn muốn chuyển đơn này thành ${action === 'PAID' ? 'ĐÃ NHẬN TIỀN' : 'HỦY ĐƠN'}?`;
+  const handleUpdateOrderStatus = async (orderId: string, action: 'PAID' | 'CANCELLED' | 'DELETE') => {
+    let actionText = '';
+    if (action === 'PAID') actionText = 'ĐÃ NHẬN TIỀN';
+    else if (action === 'CANCELLED') actionText = 'HỦY ĐƠN';
+    else if (action === 'DELETE') actionText = 'XÓA ĐƠN';
+    
+    const message = `Bạn chắc chắn muốn ${action === 'DELETE' ? 'xóa hẳn đơn này' : `chuyển đơn này thành ${actionText}`}?`;
     
     showConfirm(message, async () => {
       try {
@@ -64,8 +69,13 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
         });
         const data = await res.json();
         if (data.success) {
-          setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, status: action } : o));
-          showAlert(action === 'PAID' ? '✅ Đã chốt đơn thành công!\nSản phẩm đã chuyển sang ĐÃ BÁN.' : '🚫 Đã hủy đơn thành công!\nSản phẩm đã được nhả ra.');
+          if (action === 'DELETE') {
+            setOrders(prev => prev.filter(o => o.orderId !== orderId));
+            showAlert('🗑️ Đã xóa đơn hàng thành công!');
+          } else {
+            setOrders(prev => prev.map(o => o.orderId === orderId ? { ...o, status: action } : o));
+            showAlert(action === 'PAID' ? '✅ Đã chốt đơn thành công!\nSản phẩm đã chuyển sang ĐÃ BÁN.' : '🚫 Đã hủy đơn thành công!\nSản phẩm đã được nhả ra.');
+          }
         } else {
           showAlert('❌ Lỗi: ' + (data.error || 'Có lỗi xảy ra'));
         }
@@ -681,23 +691,31 @@ export default function AdminClient({ initialProducts }: { initialProducts: Prod
                           {order.status}
                         </span>
                         
-                        {order.expireTime && order.status === 'PENDING' && (
-                          <div className="mt-4 flex flex-col gap-2">
-                            <button 
-                              onClick={() => handleUpdateOrderStatus(order.orderId, 'PAID')}
-                              className="bg-green-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-green-900 hover:bg-green-700 transition-colors shadow-[2px_2px_0px_0px_rgba(20,83,45,1)]"
-                            >
-                              Đã Nhận Tiền
-                            </button>
-                            <button 
-                              onClick={() => handleUpdateOrderStatus(order.orderId, 'CANCELLED')}
-                              className="bg-red-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-red-900 hover:bg-red-700 transition-colors shadow-[2px_2px_0px_0px_rgba(127,29,29,1)]"
-                            >
-                              Hủy Đơn
-                            </button>
-                            <p className="text-[10px] font-bold text-gray-500 mt-1">Hết hạn QR: {new Date(order.expireTime).toLocaleTimeString('vi-VN')}</p>
-                          </div>
-                        )}
+                        <div className="mt-4 flex flex-col gap-2">
+                          {order.expireTime && order.status === 'PENDING' && (
+                            <>
+                              <button 
+                                onClick={() => handleUpdateOrderStatus(order.orderId, 'PAID')}
+                                className="bg-green-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-green-900 hover:bg-green-700 transition-colors shadow-[2px_2px_0px_0px_rgba(20,83,45,1)]"
+                              >
+                                Đã Nhận Tiền
+                              </button>
+                              <button 
+                                onClick={() => handleUpdateOrderStatus(order.orderId, 'CANCELLED')}
+                                className="bg-orange-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-orange-900 hover:bg-orange-700 transition-colors shadow-[2px_2px_0px_0px_rgba(154,52,18,1)]"
+                              >
+                                Hủy Đơn
+                              </button>
+                              <p className="text-[10px] font-bold text-gray-500 mt-1">Hết hạn QR: {new Date(order.expireTime).toLocaleTimeString('vi-VN')}</p>
+                            </>
+                          )}
+                          <button 
+                            onClick={() => handleUpdateOrderStatus(order.orderId, 'DELETE')}
+                            className="bg-red-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-red-900 hover:bg-red-700 transition-colors shadow-[2px_2px_0px_0px_rgba(127,29,29,1)]"
+                          >
+                            Xóa Đơn Khỏi Lịch Sử
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

@@ -64,9 +64,12 @@ export async function POST(request: Request) {
       for (const item of order.cart) {
         await redis.zrem('locked_products', item.id);
       }
+    } else if (action === 'DELETE') {
+      await redis.hdel('orders', orderId);
+      return NextResponse.json({ success: true, message: 'Deleted' });
     }
 
-    // Save order back
+    // Save order back (only if not deleted)
     await redis.hset('orders', { [orderId]: JSON.stringify(order) });
     
     // Revalidate paths so the website updates instantly
