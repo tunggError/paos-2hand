@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Outfit, Manrope } from "next/font/google";
+import { Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { CartProvider } from "@/context/CartContext";
 
-const outfitFont = Outfit({
+const headingFont = Montserrat({
   variable: "--font-heading",
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
 });
 
-const manropeFont = Manrope({
+const bodyFont = Inter({
   variable: "--font-body",
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
 });
 
 export const metadata: Metadata = {
@@ -26,8 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${outfitFont.variable} ${manropeFont.variable} h-full antialiased`}
+      lang="vi"
+      className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
         <CartProvider>
