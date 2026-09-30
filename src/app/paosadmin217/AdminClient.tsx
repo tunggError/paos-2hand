@@ -194,7 +194,7 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
     if (res.success) {
       setIsAuthenticated(true);
     } else {
-      showAlert('❌ Sai mật khẩu!');
+      showAlert('❌ ' + (res.error || 'Đăng nhập thất bại!'));
     }
   };
 
