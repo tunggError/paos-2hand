@@ -124,11 +124,10 @@ function CheckoutContent() {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // NOTE: Only send cart IDs + customer info — server will calculate price
         body: JSON.stringify({ 
-          cart, 
+          cart,
           customer: { name, phone, address, province },
-          shippingFee,
-          total: finalTotal
         })
       });
       const data = await res.json();
@@ -137,22 +136,34 @@ function CheckoutContent() {
         alert(data.error || "Có lỗi xảy ra, một số sản phẩm đã bị người khác giữ trước.");
         return;
       }
+
+      // Use server-computed total & shippingFee — never trust client values
+      const serverTotal: number = data.total;
+      const serverShippingFee: number = data.shippingFee;
+
+      // Build ig message with server-confirmed amounts
+      const serverIgMessage = encodeURIComponent(
+        `Chào shop, mình đã CK đơn hàng: ${data.orderId}\n\n` +
+        `Người nhận: ${name}\nSĐT: ${phone}\nĐịa chỉ: ${address}, ${province}\n\n` +
+        `Sản phẩm:\n${cart.map((item: any, i: number) => `${i + 1}. ${item.name} (${item.price})`).join('\n')}\n\n` +
+        `TỔNG ĐÃ TT: ${serverTotal.toLocaleString('vi-VN')}đ`
+      );
       
       setOrderId(data.orderId);
       setLockExpireTime(data.expireTime);
       addPendingOrder({
         orderId: data.orderId,
         expireTime: data.expireTime,
-        total: finalTotal,
-        shippingFee: shippingFee,
-        igMessage: igMessage,
+        total: serverTotal,
+        shippingFee: serverShippingFee,
+        igMessage: serverIgMessage,
         customer: { name, phone, address, province },
         items: cart
       });
-      clearCart(); // Dọn giỏ hàng để có thể mua thêm món khác
+      clearCart();
       
-      router.refresh(); // Force client cache to update so homepage shows TẠM GIỮ instantly
-      router.push(`/checkout?orderId=${data.orderId}`); // Navigate to specific order
+      router.refresh();
+      router.push(`/checkout?orderId=${data.orderId}`);
     } catch (err) {
       alert("Lỗi kết nối. Vui lòng thử lại.");
     } finally {

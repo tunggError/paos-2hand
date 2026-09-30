@@ -1,13 +1,12 @@
 import { getAllProducts } from '@/lib/data';
 import AdminClient from './AdminClient';
-import { cookies } from 'next/headers';
+import { isAdminAuthenticated } from '@/lib/auth';
 
-export const revalidate = 60;
+export const revalidate = 0; // Always re-render to reflect real auth state
 
 export default async function AdminPage() {
   const products = await getAllProducts();
-  const cookieStore = await cookies();
-  const isAuthenticated = cookieStore.get('paos_admin_session')?.value === 'authenticated';
+  const isAuthenticated = await isAdminAuthenticated();
 
   return (
     <div className="min-h-screen bg-cream-100 p-4 md:p-8">
