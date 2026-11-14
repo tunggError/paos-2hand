@@ -40,7 +40,7 @@ const POPUP_LAYOUTS = [
     key: "topics",
     desktop: { top: "145px", left: "20px", width: 170 },
     mobile: { top: "135px", left: "10px", width: 155 },
-    delay: 0.25,
+    delay: 0.5,
     rotation: -1.2,
   },
   // 1: BAG & TEE COLLECTION (Wide Landscape - Top Left)
@@ -48,7 +48,7 @@ const POPUP_LAYOUTS = [
     key: "tee",
     desktop: { top: "78px", left: "95px", width: 360 },
     mobile: { top: "75px", left: "14px", width: 235 },
-    delay: 0.4,
+    delay: 0.7,
     rotation: 0.6,
   },
   // 2: SHOES & OUTERWEAR COLLECTION (Wide Landscape - Center Top)
@@ -56,7 +56,7 @@ const POPUP_LAYOUTS = [
     key: "outerwear",
     desktop: { top: "82px", left: "calc(50% - 145px)", width: 355 },
     mobile: { top: "80px", right: "14px", width: 235 },
-    delay: 0.55,
+    delay: 0.88,
     rotation: -0.8,
   },
   // 3: ARCHIVE SELECTION (Large Square 3x3 Grid - Top Right)
@@ -64,7 +64,7 @@ const POPUP_LAYOUTS = [
     key: "archive_grid",
     desktop: { top: "78px", right: "35px", width: 370 },
     mobile: { top: "160px", right: "15px", width: 245 },
-    delay: 0.7,
+    delay: 1.05,
     rotation: -0.5,
   },
   // 4: STORE LOCATOR (Medium Landscape - Center Left)
@@ -72,7 +72,7 @@ const POPUP_LAYOUTS = [
     key: "store_info",
     desktop: { top: "270px", left: "245px", width: 335 },
     mobile: { top: "270px", left: "20px", width: 235 },
-    delay: 0.85,
+    delay: 1.22,
     rotation: 0.6,
   },
   // 5: SHIRTS COLLECTION (Medium Square - Bottom Left)
@@ -80,7 +80,7 @@ const POPUP_LAYOUTS = [
     key: "shirt",
     desktop: { bottom: "95px", left: "75px", width: 300 },
     mobile: { bottom: "115px", left: "15px", width: 215 },
-    delay: 1.0,
+    delay: 1.38,
     rotation: 1.0,
   },
   // 6: BOTTOMS & DENIM (Portrait / Tall - Center Right)
@@ -88,7 +88,7 @@ const POPUP_LAYOUTS = [
     key: "bottom",
     desktop: { top: "275px", right: "260px", width: 210 },
     mobile: { top: "350px", left: "20px", width: 175 },
-    delay: 1.15,
+    delay: 1.54,
     rotation: 1.2,
   },
   // 7: WOMENS / LOOKBOOK (Wide Landscape - Bottom Right Mid)
@@ -96,7 +96,7 @@ const POPUP_LAYOUTS = [
     key: "lookbook",
     desktop: { bottom: "75px", right: "195px", width: 335 },
     mobile: { bottom: "85px", right: "20px", width: 220 },
-    delay: 1.3,
+    delay: 1.7,
     rotation: 1.0,
   },
   // 8: INSTAGRAM @PAOS.2HAND (Medium Profile Card - Bottom Right Corner)
@@ -104,7 +104,7 @@ const POPUP_LAYOUTS = [
     key: "instagram",
     desktop: { bottom: "40px", right: "25px", width: 315 },
     mobile: { bottom: "35px", right: "15px", width: 245 },
-    delay: 1.45,
+    delay: 1.86,
     rotation: -0.8,
   },
 ];
@@ -389,9 +389,9 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                 onMouseDown={() => bringToFront(item.id)}
                 onTouchStart={() => bringToFront(item.id)}
                 initial={{
-                  scale: 0.86,
+                  scale: 0.1,
                   opacity: 0,
-                  y: 12,
+                  y: -30,
                   rotate: item.rotation,
                 }}
                 animate={{
@@ -401,17 +401,17 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                   rotate: item.rotation,
                 }}
                 exit={{
-                  scale: 0.85,
+                  scale: 0.1,
                   opacity: 0,
-                  y: 8,
-                  transition: { duration: 0.12, ease: "easeOut" },
+                  y: 10,
+                  transition: { duration: 0.15, ease: "easeOut" },
                 }}
                 transition={{
-                  delay: Math.min(item.delay * 0.45, 0.45),
+                  delay: item.delay,
                   type: "spring",
-                  stiffness: 380,
-                  damping: 26,
-                  mass: 0.65,
+                  stiffness: 240,
+                  damping: 10,
+                  mass: 0.8,
                 }}
                 style={{
                   position: "absolute",
