@@ -28,6 +28,7 @@
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   --font-sans: var(--font-body);
+  --font-anton: var(--font-anton);
   
   --shadow-sm: 4px 4px 0px 0px rgba(43, 45, 38, 1);
   --shadow-md: 6px 6px 0px 0px rgba(43, 45, 38, 1);

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat, Inter } from "next/font/google";
+import { Montserrat, Inter, Anton } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { CartProvider } from "@/context/CartContext";
@@ -12,6 +12,12 @@ const headingFont = Montserrat({
 const bodyFont = Inter({
   variable: "--font-body",
   subsets: ["latin", "vietnamese"],
+});
+
+const antonFont = Anton({
+  weight: "400",
+  variable: "--font-anton",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${headingFont.variable} ${bodyFont.variable} h-full antialiased`}
+      className={`${headingFont.variable} ${bodyFont.variable} ${antonFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
         <CartProvider>

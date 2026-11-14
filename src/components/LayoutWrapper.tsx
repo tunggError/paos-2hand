@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import Header from "./Header";
 import Footer from "./Footer";
 import CartSidebar from "./CartSidebar";
-import SplashScreen from "./SplashScreen";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,7 +19,6 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <>
-      <SplashScreen />
       <CartSidebar />
       <Header />
       <main className="flex-1 flex flex-col">
@@ -30,3 +28,4 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     </>
   );
 }
+

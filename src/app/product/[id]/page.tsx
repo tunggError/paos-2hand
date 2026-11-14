@@ -24,10 +24,23 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   return (
     <div className="bg-cream-100 min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-6xl">
-        <div className="mb-8">
-          <Link href="/#products" className="text-olive-600 hover:text-olive-700 font-bold flex items-center gap-2 transition-colors">
-            &larr; Quay lại cửa hàng
+        <div className="mb-8 flex items-center justify-between">
+          <Link href="/products" className="text-olive-600 hover:text-olive-700 font-bold flex items-center gap-2 transition-colors">
+            &larr; Quay lại danh sách sản phẩm
           </Link>
+          {product.category && (
+            <Link 
+              href={`/products?category=${product.category}`}
+              className="text-xs font-mono font-bold uppercase tracking-wider bg-cream-200 text-gray-800 px-3 py-1 border border-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
+            >
+              Mục: {
+                product.category === 'tee' ? 'Áo phông / thun' :
+                product.category === 'shirt' ? 'Áo sơ mi' :
+                product.category === 'outerwear' ? 'Áo khoác' :
+                product.category === 'bottom' ? 'Quần' : 'Phụ kiện'
+              } &rarr;
+            </Link>
+          )}
         </div>
 
         <div className="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-cream-200 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">

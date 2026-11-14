@@ -1,6 +1,8 @@
 import { getInstagramPosts } from './instagram';
-import { parseInstagramCaption } from './parser';
+import { parseInstagramCaption, detectCategory, ProductCategory } from './parser';
 import { redis } from './redis';
+
+export type { ProductCategory };
 
 export type Product = {
   id: string;
@@ -9,6 +11,7 @@ export type Product = {
   image: string;
   isSold: boolean;
   isAnnouncement: boolean;
+  category?: ProductCategory;
   isLocked?: boolean;
   isManual?: boolean;
   condition?: string;
@@ -39,6 +42,7 @@ export async function getAllProducts(): Promise<Product[]> {
         const parsed = JSON.parse(m);
         return {
           ...parsed,
+          category: parsed.category || detectCategory(parsed.name, parsed.description || ""),
           isManual: true,
           isAnnouncement: false, // Manual products are always products
           isLocked: lockedProducts.includes(parsed.id),
@@ -66,15 +70,21 @@ export async function getAllProducts(): Promise<Product[]> {
         images = [post.media_url];
       }
 
+      const assignedName = override.name !== undefined ? override.name : parsed.name;
+      const assignedCategory = override.category !== undefined 
+        ? override.category 
+        : (parsed.category || detectCategory(assignedName, post.caption || ""));
+
       return {
         id,
-        name: override.name !== undefined ? override.name : parsed.name,
+        name: assignedName,
         price: override.price !== undefined ? override.price : parsed.price,
         image: post.media_url,
         images: images,
         isSold: override.isSold !== undefined ? override.isSold : defaultIsSold,
         isLocked: lockedProducts.includes(id),
         isAnnouncement: defaultIsAnnouncement,
+        category: assignedCategory,
         condition: parsed.condition,
         measurements: parsed.measurements,
         description: parsed.description,
