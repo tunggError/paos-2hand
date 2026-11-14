@@ -455,7 +455,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                   </div>
 
                   {/* WINDOW BODY CONTENT (Varying by window type) */}
-                  <div className="bg-white text-black relative">
+                  <div className="bg-white text-black relative overflow-hidden">
                     {/* CASE 1: 3x3 ARCHIVE SELECTION (Mihara's Small Leather Goods layout) */}
                     {item.type === "archive_grid" && (
                       <Link
@@ -463,7 +463,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         onClick={() => {
                           if (soundEnabled) playRetroTone("pop");
                         }}
-                        className="block p-2 group/link"
+                        className="block p-2 group/link relative"
                       >
                         <div className="grid grid-cols-3 gap-1.5 bg-gray-50 p-1.5 border border-gray-200">
                           {(item.images || []).slice(0, 9).map((imgSrc, i) => (
@@ -473,7 +473,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                                 alt={`Archive ${i + 1}`}
                                 loading="lazy"
                                 decoding="async"
-                                className="w-full h-full object-cover transition-transform duration-200 group-hover/link:scale-105"
+                                className="w-full h-full object-cover"
                               />
                             </div>
                           ))}
@@ -483,11 +483,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                             {item.caption}
                           </p>
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-150 bg-white/70 backdrop-blur-[1px]">
-                          <span className="bg-[#0048d0] text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 shadow-md">
-                            XEM TRỌN BỘ ARCHIVE →
-                          </span>
-                        </div>
+                        {/* EXACT MIHARA BLUE HOVER OVERLAY (No text buttons) */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0573d9]/65 to-[#05139f]/75 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none" />
                       </Link>
                     )}
 
@@ -498,7 +495,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         onClick={() => {
                           if (soundEnabled) playRetroTone("pop");
                         }}
-                        className="block p-3 text-center group/link relative"
+                        className="block p-3 text-center group/link relative overflow-hidden"
                       >
                         <div className="h-28 flex flex-col items-center justify-center border border-dashed border-gray-300 bg-neutral-50 relative overflow-hidden">
                           {/* Stamped Red TOPICS Box */}
@@ -512,6 +509,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                             PAOS.2HAND
                           </span>
                         </div>
+                        {/* EXACT MIHARA BLUE HOVER OVERLAY (No text buttons) */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0573d9]/65 to-[#05139f]/75 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none" />
                       </Link>
                     )}
 
@@ -524,7 +523,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         onClick={() => {
                           if (soundEnabled) playRetroTone("pop");
                         }}
-                        className="block p-3 text-[11px] group/link"
+                        className="block p-3 text-[11px] group/link relative overflow-hidden"
                       >
                         <div className="space-y-2.5">
                           <div className="flex items-start gap-2.5 pb-2 border-b border-gray-200">
@@ -544,6 +543,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                             <p>• Nhận đơn qua Direct Instagram @paos.2hand</p>
                           </div>
                         </div>
+                        {/* EXACT MIHARA BLUE HOVER OVERLAY (No text buttons) */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0573d9]/65 to-[#05139f]/75 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none" />
                       </a>
                     )}
 
@@ -554,7 +555,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         onClick={() => {
                           if (soundEnabled) playRetroTone("pop");
                         }}
-                        className="block p-2 group/link relative"
+                        className="block p-2 group/link relative overflow-hidden"
                       >
                         <div className="grid grid-cols-2 gap-2 h-36 bg-gray-50 p-1 border border-gray-200 overflow-hidden">
                           {((item.images && item.images.length > 1) ? item.images : [item.image, item.image]).slice(0, 2).map((img, idx) => (
@@ -564,7 +565,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                                 alt="Outerwear"
                                 loading="lazy"
                                 decoding="async"
-                                className="w-full h-full object-cover transition-transform duration-200 group-hover/link:scale-105"
+                                className="w-full h-full object-cover"
                               />
                             </div>
                           ))}
@@ -573,11 +574,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                           <span className="text-[#0048d0]">{item.tag}</span>
                           <span className="text-gray-500 uppercase">{item.caption}</span>
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-150 bg-white/70 backdrop-blur-[1px]">
-                          <span className="bg-[#0048d0] text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 shadow-md">
-                            XEM MỤC ÁO KHOÁC →
-                          </span>
-                        </div>
+                        {/* EXACT MIHARA BLUE HOVER OVERLAY (No text buttons) */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0573d9]/65 to-[#05139f]/75 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none" />
                       </Link>
                     )}
 
@@ -588,7 +586,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         onClick={() => {
                           if (soundEnabled) playRetroTone("pop");
                         }}
-                        className="block p-2 group/link relative"
+                        className="block p-2 group/link relative overflow-hidden"
                       >
                         <div
                           className={`relative overflow-hidden bg-gray-100 border border-gray-200 ${
@@ -600,18 +598,15 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                             alt={item.title}
                             loading="lazy"
                             decoding="async"
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover/link:scale-105"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-gray-700 px-1">
                           {item.tag && <span className="text-[#0048d0] font-bold">{item.tag}</span>}
                           {item.caption && <span className="text-gray-500 uppercase text-[9px] truncate max-w-[160px]">{item.caption}</span>}
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-150 bg-white/70 backdrop-blur-[1px]">
-                          <span className="bg-[#0048d0] text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 shadow-md">
-                            KHÁM PHÁ MỤC NÀY →
-                          </span>
-                        </div>
+                        {/* EXACT MIHARA BLUE HOVER OVERLAY (No text buttons) */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0573d9]/65 to-[#05139f]/75 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none" />
                       </Link>
                     )}
 
@@ -624,7 +619,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         onClick={() => {
                           if (soundEnabled) playRetroTone("pop");
                         }}
-                        className="block p-3 text-black group/link"
+                        className="block p-3 text-black group/link relative overflow-hidden"
                       >
                         {/* Avatar & Header */}
                         <div className="flex items-center gap-3 pb-2.5 border-b border-gray-200">
@@ -664,6 +659,9 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                           <span>THEO DÕI TRÊN INSTAGRAM</span>
                           <span>↗</span>
                         </div>
+
+                        {/* EXACT MIHARA BLUE HOVER OVERLAY (No text buttons) */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0573d9]/65 to-[#05139f]/75 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 pointer-events-none" />
                       </a>
                     )}
                   </div>
