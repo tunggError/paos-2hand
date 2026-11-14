@@ -316,28 +316,27 @@ interface MiharaPopupsProps {
 export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
   const popups = useMemo(() => buildMiharaPopups(products), [products]);
   const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
-  const [activeZIndex, setActiveZIndex] = useState<Record<string, number>>({});
-  const [highestZ, setHighestZ] = useState<number>(30);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
+  
+  // Directly initialize z-indexes on initial render to prevent layout jump and re-renders
+  const [activeZIndex, setActiveZIndex] = useState<Record<string, number>>(() => {
     const initialZ: Record<string, number> = {};
     popups.forEach((item, i) => {
       initialZ[item.id] = 20 + i;
     });
-    setActiveZIndex(initialZ);
-    setHighestZ(20 + popups.length + 1);
-  }, [popups]);
+    return initialZ;
+  });
+  const [highestZ, setHighestZ] = useState<number>(() => 20 + popups.length + 1);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const bringToFront = (id: string) => {
     const nextZ = Math.min(45, highestZ + 1);
@@ -386,13 +385,13 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                 id={item.id}
                 drag
                 dragMomentum={false}
-                dragElastic={0.08}
+                dragElastic={0.05}
                 onMouseDown={() => bringToFront(item.id)}
                 onTouchStart={() => bringToFront(item.id)}
                 initial={{
-                  scale: 0.1,
+                  scale: 0.86,
                   opacity: 0,
-                  y: -35,
+                  y: 12,
                   rotate: item.rotation,
                 }}
                 animate={{
@@ -402,17 +401,17 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                   rotate: item.rotation,
                 }}
                 exit={{
-                  scale: 0.35,
+                  scale: 0.85,
                   opacity: 0,
-                  y: 20,
-                  transition: { duration: 0.18, ease: "easeIn" },
+                  y: 8,
+                  transition: { duration: 0.12, ease: "easeOut" },
                 }}
                 transition={{
-                  delay: item.delay,
+                  delay: Math.min(item.delay * 0.45, 0.45),
                   type: "spring",
-                  stiffness: 230,
-                  damping: 14,
-                  bounce: 0.55,
+                  stiffness: 380,
+                  damping: 26,
+                  mass: 0.65,
                 }}
                 style={{
                   position: "absolute",
@@ -422,11 +421,13 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                   right: pos.right,
                   width: pos.width,
                   zIndex: currentZ,
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
                 }}
-                className="pointer-events-auto select-none cursor-move group touch-none"
+                className="pointer-events-auto select-none cursor-move group touch-none transform-gpu will-change-transform"
               >
                 {/* EXACT MIHARA YASUHIRO WINDOW SHELL: 2px Blue Border, Pure White Content, Red [X] */}
-                <div className="bg-white border-2 border-[#0048d0] shadow-[0_12px_36px_rgba(0,0,0,0.38)] overflow-hidden transition-shadow duration-200 group-hover:shadow-[0_18px_48px_rgba(0,0,0,0.55)]">
+                <div className="bg-white border-2 border-[#0048d0] shadow-[0_10px_30px_rgba(0,0,0,0.32)] overflow-hidden transition-shadow duration-150 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.48)]">
                   {/* ROYAL BLUE TITLE BAR */}
                   <div className="bg-[#0048d0] text-white flex items-center justify-between px-2 py-1 select-none cursor-grab active:cursor-grabbing">
                     <span
@@ -465,7 +466,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                                 src={imgSrc}
                                 alt={`Archive ${i + 1}`}
                                 loading="lazy"
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover/link:scale-105"
+                                decoding="async"
+                                className="w-full h-full object-cover transition-transform duration-200 group-hover/link:scale-105"
                               />
                             </div>
                           ))}
@@ -475,7 +477,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                             {item.caption}
                           </p>
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 bg-white/70 backdrop-blur-[1px]">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-150 bg-white/70 backdrop-blur-[1px]">
                           <span className="bg-[#0048d0] text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 shadow-md">
                             XEM TRỌN BỘ ARCHIVE →
                           </span>
@@ -521,7 +523,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         <div className="space-y-2.5">
                           <div className="flex items-start gap-2.5 pb-2 border-b border-gray-200">
                             <div className="w-12 h-12 bg-neutral-100 border border-gray-300 overflow-hidden shrink-0">
-                              <img src="/logo.jpg" alt="Store" className="w-full h-full object-cover" />
+                              <img src="/logo.jpg" alt="Store" decoding="async" className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h5 className="font-bold text-gray-900 text-xs uppercase tracking-tight">HÀ NỘI FLAGSHIP</h5>
@@ -555,7 +557,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                                 src={img || item.image}
                                 alt="Outerwear"
                                 loading="lazy"
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover/link:scale-105"
+                                decoding="async"
+                                className="w-full h-full object-cover transition-transform duration-200 group-hover/link:scale-105"
                               />
                             </div>
                           ))}
@@ -564,7 +567,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                           <span className="text-[#0048d0]">{item.tag}</span>
                           <span className="text-gray-500 uppercase">{item.caption}</span>
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 bg-white/70 backdrop-blur-[1px]">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-150 bg-white/70 backdrop-blur-[1px]">
                           <span className="bg-[#0048d0] text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 shadow-md">
                             XEM MỤC ÁO KHOÁC →
                           </span>
@@ -590,14 +593,15 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                             src={item.image}
                             alt={item.title}
                             loading="lazy"
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover/link:scale-105"
+                            decoding="async"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover/link:scale-105"
                           />
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono font-bold text-gray-700 px-1">
                           {item.tag && <span className="text-[#0048d0] font-bold">{item.tag}</span>}
                           {item.caption && <span className="text-gray-500 uppercase text-[9px] truncate max-w-[160px]">{item.caption}</span>}
                         </div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-200 bg-white/70 backdrop-blur-[1px]">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/link:opacity-100 transition-opacity duration-150 bg-white/70 backdrop-blur-[1px]">
                           <span className="bg-[#0048d0] text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 shadow-md">
                             KHÁM PHÁ MỤC NÀY →
                           </span>
@@ -620,7 +624,7 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
                         <div className="flex items-center gap-3 pb-2.5 border-b border-gray-200">
                           <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0">
                             <div className="w-full h-full rounded-full overflow-hidden border border-white">
-                              <img src="/logo.jpg" alt="paos.2hand" className="w-full h-full object-cover" />
+                              <img src="/logo.jpg" alt="paos.2hand" decoding="async" className="w-full h-full object-cover" />
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
