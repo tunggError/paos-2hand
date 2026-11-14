@@ -364,8 +364,10 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
     setClosedIds(new Set());
   };
 
-  // On mobile: display first 5 popups so screen remains clean & usable
-  const visiblePopups = isMobile ? popups.slice(0, 5) : popups;
+  // On mobile (< 768px): The homepage uses the authentic Mihara iOS Springboard Grid instead of desktop popups
+  if (isMobile) return null;
+
+  const visiblePopups = popups;
   const activeCount = visiblePopups.filter((p) => !closedIds.has(p.id)).length;
 
   return (
