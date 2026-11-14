@@ -12,12 +12,24 @@ export async function GET() {
 
     // Mask bot token for security in UI: 123456...abcd
     let maskedToken = '';
+    let botUsername = '';
+    let botFirstName = '';
+
     if (config.botToken) {
       if (config.botToken.length > 10) {
         maskedToken = config.botToken.slice(0, 6) + '...' + config.botToken.slice(-4);
       } else {
         maskedToken = '******';
       }
+
+      try {
+        const meRes = await fetch(`https://api.telegram.org/bot${config.botToken}/getMe`);
+        const meData = await meRes.json();
+        if (meData.ok && meData.result) {
+          botUsername = meData.result.username || '';
+          botFirstName = meData.result.first_name || '';
+        }
+      } catch (err) {}
     }
 
     return NextResponse.json({
@@ -25,6 +37,8 @@ export async function GET() {
       enabled: config.enabled,
       chatId: config.chatId,
       maskedToken,
+      botUsername,
+      botFirstName,
       hasEnvToken: !!process.env.TELEGRAM_BOT_TOKEN,
       hasEnvChatId: !!process.env.TELEGRAM_CHAT_ID,
     });

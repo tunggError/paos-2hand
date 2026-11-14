@@ -78,7 +78,11 @@ export async function sendTelegramMessage(text: string, customConfig?: { botToke
     const data = await res.json();
     if (!res.ok || !data.ok) {
       console.error('Telegram API error:', data);
-      return { success: false, error: data.description || 'Lỗi gửi tin nhắn Telegram' };
+      let desc = data.description || 'Lỗi gửi tin nhắn Telegram';
+      if (desc.toLowerCase().includes('chat not found')) {
+        desc = 'Lỗi "chat not found": Bạn chưa bấm nút "START" với bot trên Telegram!\n\n👉 Cách khắc phục:\n1. Mở link chat với bot: https://t.me/Paos2handBot (hoặc tìm username bot của bạn)\n2. Bấm nút START ở dưới cùng màn hình chat\n3. Sau đó quay lại đây bấm "Gửi Thử Tin Nhắn Test" là thành công ngay!';
+      }
+      return { success: false, error: desc };
     }
 
     return { success: true };

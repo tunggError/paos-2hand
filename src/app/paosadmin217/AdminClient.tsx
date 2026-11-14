@@ -27,6 +27,8 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
     enabled: boolean;
     chatId: string;
     maskedToken: string;
+    botUsername?: string;
+    botFirstName?: string;
     hasEnvToken: boolean;
     hasEnvChatId: boolean;
   } | null>(null);
@@ -882,15 +884,35 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
 
             {/* Current Config Info Card */}
             {telegramConfig?.configured && (
-              <div className="bg-cream-100 border-2 border-gray-900 p-4 mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
-                <div>
-                  <span className="font-bold text-gray-500 uppercase block">Bot Token hiện tại:</span>
-                  <span className="font-black text-gray-900 text-sm">{telegramConfig.maskedToken || 'Đã lưu'}</span>
+              <div className="bg-cream-100 border-2 border-gray-900 p-4 mb-6 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                  <div>
+                    <span className="font-bold text-gray-500 uppercase block">Bot Token hiện tại:</span>
+                    <span className="font-black text-gray-900 text-sm">{telegramConfig.maskedToken || 'Đã lưu'}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-gray-500 uppercase block">Chat ID người nhận:</span>
+                    <span className="font-black text-gray-900 text-sm">{telegramConfig.chatId}</span>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-bold text-gray-500 uppercase block">Chat ID người nhận:</span>
-                  <span className="font-black text-gray-900 text-sm">{telegramConfig.chatId}</span>
-                </div>
+
+                {telegramConfig.botUsername && (
+                  <div className="pt-3 border-t-2 border-dashed border-gray-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-sky-50 p-3 border border-sky-300">
+                    <div className="text-xs">
+                      <span className="font-bold text-sky-900 block">🤖 Bot: @{telegramConfig.botUsername} {telegramConfig.botFirstName ? `(${telegramConfig.botFirstName})` : ''}</span>
+                      <span className="text-[11px] text-sky-700">⚠️ Bạn phải bấm <b>START</b> trong chat riêng với bot này một lần thì bot mới gửi tin được!</span>
+                    </div>
+                    <a
+                      href={`https://t.me/${telegramConfig.botUsername}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white font-black text-xs uppercase tracking-wider shadow-sm transition-colors shrink-0 cursor-pointer"
+                    >
+                      <span>👉 MỞ BOT & BẤM START</span>
+                      <span>↗</span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 
