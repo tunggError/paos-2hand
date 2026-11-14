@@ -40,7 +40,8 @@ export default function MiharaHero({ products = [], announcements = [] }: Mihara
   }, []);
 
   return (
-    <section className="relative w-full h-[calc(100vh-4rem)] min-h-[640px] max-h-[1080px] overflow-hidden bg-black text-white flex flex-col justify-between select-none border-b-4 border-gray-900">
+    <>
+      <section className="relative w-full h-[calc(100vh-4rem)] min-h-[640px] max-h-[1080px] overflow-hidden bg-black text-white flex flex-col justify-between select-none border-b-4 border-gray-900">
       {/* 1. BACKGROUND FULLSCREEN SLIDER */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="sync">
@@ -154,9 +155,10 @@ export default function MiharaHero({ products = [], announcements = [] }: Mihara
           ))}
         </div>
       </div>
-
-      {/* 5. RETRO WINDOWS 95 BOUNCING POP-UPS (Mihara Yasuhiro Signature) */}
-      <MiharaPopups products={products} announcements={announcements} />
     </section>
-  );
+
+    {/* 5. PINNED RETRO POP-UPS - Stays fixed to the viewport when scrolling down to the footer */}
+    <MiharaPopups products={products} announcements={announcements} />
+  </>
+);
 }

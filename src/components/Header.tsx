@@ -86,7 +86,7 @@ export default function Header() {
       
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
-        <div className={`md:hidden absolute top-16 left-0 w-full flex flex-col font-black text-base uppercase tracking-widest p-4 gap-3 z-40 border-b-4 ${
+        <div className={`md:hidden absolute top-16 left-0 w-full flex flex-col font-black text-base uppercase tracking-widest p-4 gap-3 z-50 border-b-4 ${
           isDarkHeader
             ? 'bg-neutral-950/95 border-white text-white'
             : 'bg-cream-100 border-gray-900 text-gray-900'

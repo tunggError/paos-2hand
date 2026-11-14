@@ -38,31 +38,31 @@ const POPUP_LAYOUTS = [
   // 0: TOPICS (Small Square / Portrait - Far Left)
   {
     key: "topics",
-    desktop: { top: "135px", left: "20px", width: 170 },
-    mobile: { top: "125px", left: "10px", width: 155 },
+    desktop: { top: "145px", left: "20px", width: 170 },
+    mobile: { top: "135px", left: "10px", width: 155 },
     delay: 0.25,
     rotation: -1.2,
   },
   // 1: BAG & TEE COLLECTION (Wide Landscape - Top Left)
   {
     key: "tee",
-    desktop: { top: "45px", left: "95px", width: 360 },
-    mobile: { top: "50px", left: "16px", width: 235 },
+    desktop: { top: "78px", left: "95px", width: 360 },
+    mobile: { top: "75px", left: "14px", width: 235 },
     delay: 0.4,
     rotation: 0.6,
   },
   // 2: SHOES & OUTERWEAR COLLECTION (Wide Landscape - Center Top)
   {
     key: "outerwear",
-    desktop: { top: "70px", left: "calc(50% - 145px)", width: 355 },
-    mobile: { top: "80px", right: "16px", width: 235 },
+    desktop: { top: "82px", left: "calc(50% - 145px)", width: 355 },
+    mobile: { top: "80px", right: "14px", width: 235 },
     delay: 0.55,
     rotation: -0.8,
   },
   // 3: ARCHIVE SELECTION (Large Square 3x3 Grid - Top Right)
   {
     key: "archive_grid",
-    desktop: { top: "55px", right: "35px", width: 370 },
+    desktop: { top: "78px", right: "35px", width: 370 },
     mobile: { top: "160px", right: "15px", width: 245 },
     delay: 0.7,
     rotation: -0.5,
@@ -70,8 +70,8 @@ const POPUP_LAYOUTS = [
   // 4: STORE LOCATOR (Medium Landscape - Center Left)
   {
     key: "store_info",
-    desktop: { top: "245px", left: "245px", width: 335 },
-    mobile: { top: "260px", left: "25px", width: 235 },
+    desktop: { top: "270px", left: "245px", width: 335 },
+    mobile: { top: "270px", left: "20px", width: 235 },
     delay: 0.85,
     rotation: 0.6,
   },
@@ -86,7 +86,7 @@ const POPUP_LAYOUTS = [
   // 6: BOTTOMS & DENIM (Portrait / Tall - Center Right)
   {
     key: "bottom",
-    desktop: { top: "255px", right: "260px", width: 210 },
+    desktop: { top: "275px", right: "260px", width: 210 },
     mobile: { top: "350px", left: "20px", width: 175 },
     delay: 1.15,
     rotation: 1.2,
@@ -371,8 +371,8 @@ export default function MiharaPopups({ products = [] }: MiharaPopupsProps) {
 
   return (
     <>
-      {/* POPUPS CONTAINER */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden z-30">
+      {/* POPUPS CONTAINER - Fixed to viewport so windows remain pinned when scrolling down to footer */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-30">
         <AnimatePresence>
           {visiblePopups.map((item) => {
             if (closedIds.has(item.id)) return null;
