@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { redis } from '@/lib/redis';
 import { rateLimit } from '@/lib/rateLimit';
 import { getAllProducts } from '@/lib/data';
+import { sendTelegramOrderNotification } from '@/lib/telegram';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -139,6 +140,11 @@ export async function POST(req: Request) {
     ids.forEach(id => pipeline.zadd('locked_products', expireTime, id));
     pipeline.hset('orders', orderId, JSON.stringify(orderData));
     await pipeline.exec();
+
+    // Notify Telegram Bot in background with full order and customer packing details
+    sendTelegramOrderNotification(orderData, 'NEW_ORDER').catch(err => {
+      console.error('Failed to send Telegram new order notification:', err);
+    });
 
     revalidatePath('/', 'layout');
     return NextResponse.json({ success: true, orderId, expireTime, total, shippingFee });

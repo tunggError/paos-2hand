@@ -19,7 +19,100 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: '', price: '', isSold: false });
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'KHO_HANG' | 'THEM_SP' | 'DON_HANG'>('KHO_HANG');
+  const [activeTab, setActiveTab] = useState<'KHO_HANG' | 'THEM_SP' | 'DON_HANG' | 'TELEGRAM'>('KHO_HANG');
+  
+  // Telegram Bot Settings State
+  const [telegramConfig, setTelegramConfig] = useState<{
+    configured: boolean;
+    enabled: boolean;
+    chatId: string;
+    maskedToken: string;
+    hasEnvToken: boolean;
+    hasEnvChatId: boolean;
+  } | null>(null);
+  const [telegramForm, setTelegramForm] = useState({
+    botToken: '',
+    chatId: '',
+    enabled: true,
+  });
+  const [isSavingTelegram, setIsSavingTelegram] = useState(false);
+  const [isTestingTelegram, setIsTestingTelegram] = useState(false);
+
+  const loadTelegramConfig = async () => {
+    try {
+      const res = await fetch('/api/admin/telegram');
+      const data = await res.json();
+      if (res.ok) {
+        setTelegramConfig(data);
+        setTelegramForm({
+          botToken: '',
+          chatId: data.chatId || '',
+          enabled: data.enabled ?? true,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'TELEGRAM') {
+      loadTelegramConfig();
+    }
+  }, [activeTab]);
+
+  const handleSaveTelegram = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingTelegram(true);
+    try {
+      const res = await fetch('/api/admin/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'SAVE',
+          botToken: telegramForm.botToken,
+          chatId: telegramForm.chatId,
+          enabled: telegramForm.enabled,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('✅ Đã lưu cấu hình Bot Telegram thành công!');
+        loadTelegramConfig();
+      } else {
+        showAlert('❌ ' + (data.error || 'Lỗi khi lưu cấu hình'));
+      }
+    } catch (err) {
+      showAlert('❌ Lỗi kết nối');
+    } finally {
+      setIsSavingTelegram(false);
+    }
+  };
+
+  const handleTestTelegram = async () => {
+    setIsTestingTelegram(true);
+    try {
+      const res = await fetch('/api/admin/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'TEST',
+          botToken: telegramForm.botToken,
+          chatId: telegramForm.chatId,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showAlert('🎉 ' + data.message);
+      } else {
+        showAlert('❌ ' + (data.error || 'Lỗi khi gửi test'));
+      }
+    } catch (err) {
+      showAlert('❌ Lỗi kết nối Telegram');
+    } finally {
+      setIsTestingTelegram(false);
+    }
+  };
   
   // Orders State
   const [orders, setOrders] = useState<any[]>([]);
@@ -52,7 +145,26 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
     }
   }, [activeTab]);
 
-  const handleUpdateOrderStatus = async (orderId: string, action: 'PAID' | 'CANCELLED' | 'DELETE') => {
+  const handleUpdateOrderStatus = async (orderId: string, action: 'PAID' | 'CANCELLED' | 'DELETE' | 'RESEND_TELEGRAM') => {
+    if (action === 'RESEND_TELEGRAM') {
+      try {
+        const res = await fetch('/api/admin/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showAlert('📲 Đã bắn thông báo đơn hàng sang Telegram thành công!');
+        } else {
+          showAlert('❌ ' + (data.error || 'Lỗi gửi Telegram'));
+        }
+      } catch (err) {
+        showAlert('❌ Lỗi kết nối');
+      }
+      return;
+    }
+
     let actionText = '';
     if (action === 'PAID') actionText = 'ĐÃ NHẬN TIỀN';
     else if (action === 'CANCELLED') actionText = 'HỦY ĐƠN';
@@ -378,6 +490,12 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
           className={`font-black uppercase px-6 py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] transition-colors ${activeTab === 'DON_HANG' ? 'bg-orange-500 text-white' : 'bg-white text-gray-900 hover:bg-cream-200'}`}
         >
           QUẢN LÝ ĐƠN HÀNG
+        </button>
+        <button
+          onClick={() => setActiveTab('TELEGRAM')}
+          className={`font-black uppercase px-6 py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] transition-colors ${activeTab === 'TELEGRAM' ? 'bg-sky-600 text-white' : 'bg-white text-gray-900 hover:bg-cream-200'}`}
+        >
+          🤖 CẤU HÌNH BOT TELEGRAM
         </button>
       </div>
 
@@ -710,6 +828,13 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
                             </>
                           )}
                           <button 
+                            onClick={() => handleUpdateOrderStatus(order.orderId, 'RESEND_TELEGRAM')}
+                            className="bg-sky-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-sky-900 hover:bg-sky-700 transition-colors shadow-[2px_2px_0px_0px_rgba(12,74,110,1)] flex items-center justify-center gap-1"
+                            title="Bắn thông báo đơn hàng này sang Telegram"
+                          >
+                            <span>📲</span> Gửi Qua Telegram
+                          </button>
+                          <button 
                             onClick={() => handleUpdateOrderStatus(order.orderId, 'DELETE')}
                             className="bg-red-600 text-white font-black px-3 py-2 text-[10px] uppercase border-2 border-red-900 hover:bg-red-700 transition-colors shadow-[2px_2px_0px_0px_rgba(127,29,29,1)]"
                           >
@@ -723,6 +848,151 @@ export default function AdminClient({ initialProducts, serverAuthenticated }: { 
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'TELEGRAM' && (
+        <div className="space-y-8">
+          <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-6 border-b-4 border-gray-900 gap-4">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tight text-gray-900 flex items-center gap-2">
+                  <span>🤖</span> BOT THÔNG BÁO ĐƠN HÀNG TELEGRAM
+                </h2>
+                <p className="text-sm font-bold text-gray-600 mt-1">
+                  Tự động đổ data khách hàng (Tên, SĐT, Địa chỉ, Danh sách đồ cần nhặt, Tiền ship) về Telegram để đóng gói hàng ngay lập tức.
+                </p>
+              </div>
+
+              {/* Status Badge */}
+              <div className="shrink-0">
+                {telegramConfig?.configured && telegramConfig?.enabled ? (
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-100 text-emerald-800 border-2 border-emerald-700 font-black text-xs uppercase tracking-wider shadow-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    ĐANG HOẠT ĐỘNG
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-100 text-amber-800 border-2 border-amber-700 font-black text-xs uppercase tracking-wider shadow-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                    CHƯA CẤU HÌNH HOẶC TẮT
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Current Config Info Card */}
+            {telegramConfig?.configured && (
+              <div className="bg-cream-100 border-2 border-gray-900 p-4 mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                <div>
+                  <span className="font-bold text-gray-500 uppercase block">Bot Token hiện tại:</span>
+                  <span className="font-black text-gray-900 text-sm">{telegramConfig.maskedToken || 'Đã lưu'}</span>
+                </div>
+                <div>
+                  <span className="font-bold text-gray-500 uppercase block">Chat ID người nhận:</span>
+                  <span className="font-black text-gray-900 text-sm">{telegramConfig.chatId}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Form Setup */}
+            <form onSubmit={handleSaveTelegram} className="space-y-6">
+              <div>
+                <label className="block font-black text-gray-900 text-xs uppercase mb-1">
+                  1. Telegram Bot Token <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder={telegramConfig?.maskedToken ? `(Đang dùng: ${telegramConfig.maskedToken}) - Nhập mới để đổi` : "Ví dụ: 7123456789:AAHkYQZ1B..."}
+                  value={telegramForm.botToken}
+                  onChange={(e) => setTelegramForm({ ...telegramForm, botToken: e.target.value })}
+                  className="w-full border-2 border-gray-900 p-3 bg-cream-100 font-mono font-bold text-gray-900 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-olive-600"
+                />
+                <p className="text-[11px] font-bold text-gray-500 mt-1">
+                  Mã API Token do <b>@BotFather</b> cấp khi bạn tạo bot.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-black text-gray-900 text-xs uppercase mb-1">
+                  2. Telegram Chat ID (Cá nhân hoặc ID Nhóm) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: 987654321 (cá nhân) hoặc -100123456789 (nhóm)"
+                  value={telegramForm.chatId}
+                  onChange={(e) => setTelegramForm({ ...telegramForm, chatId: e.target.value })}
+                  className="w-full border-2 border-gray-900 p-3 bg-cream-100 font-mono font-bold text-gray-900 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-olive-600"
+                />
+                <p className="text-[11px] font-bold text-gray-500 mt-1">
+                  ID tài khoản Telegram của bạn hoặc ID nhóm nhân viên đóng hàng (xem hướng dẫn bên dưới).
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 bg-cream-100 border-2 border-gray-900 p-3">
+                <input
+                  type="checkbox"
+                  id="telegram_enabled"
+                  checked={telegramForm.enabled}
+                  onChange={(e) => setTelegramForm({ ...telegramForm, enabled: e.target.checked })}
+                  className="w-5 h-5 accent-olive-600 cursor-pointer"
+                />
+                <label htmlFor="telegram_enabled" className="text-xs font-black uppercase text-gray-900 cursor-pointer select-none">
+                  Bật tự động gửi thông báo khi có khách đặt hàng & thanh toán
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                <button
+                  type="submit"
+                  disabled={isSavingTelegram}
+                  className="flex-1 bg-olive-600 text-white font-black uppercase tracking-widest py-3.5 px-6 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 transition-all text-xs disabled:opacity-50 cursor-pointer"
+                >
+                  {isSavingTelegram ? "Đang lưu..." : "💾 LƯU CẤU HÌNH BOT"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleTestTelegram}
+                  disabled={isTestingTelegram}
+                  className="flex-1 bg-sky-600 text-white font-black uppercase tracking-widest py-3.5 px-6 border-2 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-sky-700 transition-all text-xs disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>🚀</span>
+                  <span>{isTestingTelegram ? "Đang kiểm tra kết nối..." : "GỬI THỬ TIN NHẮN TEST (PING)"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Guide Card (3 Steps) */}
+          <div className="bg-white border-4 border-gray-900 shadow-[8px_8px_0px_0px_rgba(17,24,39,1)] p-6 md:p-8">
+            <h3 className="text-lg font-black uppercase text-gray-900 mb-4 pb-2 border-b-2 border-gray-900 flex items-center gap-2">
+              <span>📖</span> HƯỚNG DẪN 3 BƯỚC TẠO BOT TELEGRAM (CHỈ MẤT 1 PHÚT)
+            </h3>
+
+            <div className="space-y-4 text-xs leading-relaxed text-gray-800">
+              <div className="p-4 bg-cream-100 border-2 border-gray-900">
+                <p className="font-black text-gray-900 text-sm mb-1">BƯỚC 1: Tạo Bot & Lấy Bot Token</p>
+                <p>1. Mở app Telegram, tìm kiếm <b>@BotFather</b> (có tích xanh).</p>
+                <p>2. Bấm <b>Start</b> và gửi lệnh: <code>/newbot</code></p>
+                <p>3. Đặt tên hiển thị cho bot (VD: <i>Paos Order Bot</i>) rồi nhập username kết thúc bằng chữ "bot" (VD: <i>paos_order_bot</i>).</p>
+                <p>4. BotFather sẽ gửi cho bạn một đoạn <b>HTTP API Token</b> (dạng: <code>7123456789:AAH...</code>). Hãy copy đoạn token đó dán vào ô <b>1. Telegram Bot Token</b> ở trên.</p>
+              </div>
+
+              <div className="p-4 bg-cream-100 border-2 border-gray-900">
+                <p className="font-black text-gray-900 text-sm mb-1">BƯỚC 2: Lấy Chat ID của bạn (Hoặc của Nhóm)</p>
+                <p>• <b>Nhận tin nhắn vào Telegram cá nhân:</b> Tìm bot <b>@userinfobot</b>, bấm <b>Start</b>. Bot sẽ gửi lại cho bạn dòng <code>Id: 123456789</code>. Hãy copy số này dán vào ô <b>2. Telegram Chat ID</b>.</p>
+                <p>• <b>Nhận tin nhắn vào Nhóm Zalo/Telegram nhân viên:</b> Thêm bot bạn vừa tạo vào nhóm, sau đó thêm bot <b>@getmyid_bot</b> vào nhóm để lấy Group Chat ID (thường có dấu trừ ở đầu, ví dụ: <code>-100123456789</code>).</p>
+              </div>
+
+              <div className="p-4 bg-cream-100 border-2 border-gray-900">
+                <p className="font-black text-gray-900 text-sm mb-1">BƯỚC 3: Kích hoạt & Test</p>
+                <p>⚠️ <b>LƯU Ý QUAN TRỌNG:</b> Trước khi bấm Test, bạn phải <b>mở chat riêng với con bot bạn vừa tạo</b> và bấm nút <b>START</b> một lần để cho phép bot gửi tin nhắn tới bạn!</p>
+                <p>Sau đó bấm nút <b>"GỬI THỬ TIN NHẮN TEST (PING)"</b> ở trên. Khi Telegram ting ting tin nhắn, bot đã sẵn sàng hoạt động 100%!</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

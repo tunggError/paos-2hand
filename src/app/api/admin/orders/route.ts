@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { redis } from '@/lib/redis';
 import { isAdminAuthenticated } from '@/lib/auth';
+import { sendTelegramOrderNotification } from '@/lib/telegram';
 
 // ─── GET /api/admin/orders — list all orders ──────────────────────────────────
 
@@ -32,8 +33,8 @@ export async function GET() {
 
 // ─── POST /api/admin/orders — update order status ─────────────────────────────
 
-const ALLOWED_ACTIONS = new Set(['PAID', 'CANCELLED', 'DELETE'] as const);
-type OrderAction = 'PAID' | 'CANCELLED' | 'DELETE';
+const ALLOWED_ACTIONS = new Set(['PAID', 'CANCELLED', 'DELETE', 'RESEND_TELEGRAM'] as const);
+type OrderAction = 'PAID' | 'CANCELLED' | 'DELETE' | 'RESEND_TELEGRAM';
 
 export async function POST(request: Request) {
   try {
@@ -72,6 +73,10 @@ export async function POST(request: Request) {
         await redis.hset('product_overrides', { [item.id]: JSON.stringify(override) });
         await redis.zrem('locked_products', item.id);
       }
+      // Send Telegram Notification for packing goods
+      sendTelegramOrderNotification(order, 'ADMIN_PAID_CONFIRMED').catch(err => {
+        console.error('Failed to send Telegram paid confirmation notification:', err);
+      });
     } else if (action === 'CANCELLED') {
       order.status = 'CANCELLED';
       for (const item of order.cart) {
@@ -80,6 +85,15 @@ export async function POST(request: Request) {
     } else if (action === 'DELETE') {
       await redis.hdel('orders', orderId);
       return NextResponse.json({ success: true, message: 'Deleted' });
+    } else if (action === 'RESEND_TELEGRAM') {
+      const result = await sendTelegramOrderNotification(
+        order,
+        order.status === 'PAID' ? 'ADMIN_PAID_CONFIRMED' : 'NEW_ORDER'
+      );
+      if (!result.success) {
+        return NextResponse.json({ error: result.error || 'Lỗi gửi tin nhắn Telegram' }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, message: 'Đã bắn thông báo đơn hàng sang Telegram thành công!' });
     }
 
     await redis.hset('orders', { [orderId]: JSON.stringify(order) });

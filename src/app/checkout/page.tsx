@@ -299,6 +299,15 @@ function CheckoutContent() {
                       onClick={() => {
                         const messageToCopy = pendingOrder ? pendingOrder.igMessage : igMessage;
                         navigator.clipboard.writeText(decodeURIComponent(messageToCopy));
+                        // Fire-and-forget notification to Telegram
+                        const targetOrderId = pendingOrder ? pendingOrder.orderId : orderId;
+                        if (targetOrderId) {
+                          fetch('/api/checkout/notify-paid', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId: targetOrderId }),
+                          }).catch(() => {});
+                        }
                         alert("Đã copy toàn bộ thông tin! Vui lòng mở tin nhắn Instagram và dán (paste) gửi cho shop nhé.");
                       }}
                       className="block w-full bg-olive-600 text-white font-black uppercase tracking-widest py-3 border-4 border-gray-900 shadow-[4px_4px_0px_0px_rgba(17,24,39,1)] hover:bg-gray-900 transition-all hover:translate-y-1 hover:shadow-none text-xs"
